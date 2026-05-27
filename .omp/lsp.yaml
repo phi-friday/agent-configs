@@ -7,3 +7,9 @@ servers:
     initOptions:
       pyrefly:
         typeCheckingMode: default
+
+  ruff:
+    command: uvx
+    args: ["ruff", "server", "--color", "never"]
+    fileTypes: [".py", ".pyi"]
+    rootMarkers: ["ruff.toml", ".git"]
