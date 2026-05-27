@@ -56,7 +56,6 @@ This skill is based on these references:
 
 Review this skill again when these files change:
 
-- `references/INTERESTED_SKILLS_TAXONOMY.ko.md`
 - `references/obra/superpowers/skills/verification-before-completion/SKILL.md`
 - `references/obra/superpowers/skills/requesting-code-review/SKILL.md`
 - `references/obra/superpowers/skills/requesting-code-review/code-reviewer.md`

@@ -56,7 +56,6 @@ claim 식별 → fresh evidence 확보 → 필요한 review → feedback 처리 
 
 다음 파일이 업데이트되면 이 스킬도 다시 검토한다.
 
-- `references/INTERESTED_SKILLS_TAXONOMY.ko.md`
 - `references/obra/superpowers/skills/verification-before-completion/SKILL.md`
 - `references/obra/superpowers/skills/requesting-code-review/SKILL.md`
 - `references/obra/superpowers/skills/requesting-code-review/code-reviewer.md`
