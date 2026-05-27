@@ -1,6 +1,6 @@
 ---
 name: root-cause-debugging
-description: 버그, 테스트 실패, 빌드 실패, 통합 실패, flaky 동작, 성능 저하, 장애, 예상 밖 동작이 나타났을 때 사용한다. 수정 전에 피드백 루프를 만들고, 보고된 실패를 재현하고, 실패 경계를 추적하고, 정상 패턴과 비교하고, 반증 가능한 가설을 세우고, 한 번에 하나의 변수만 계측하고, root cause를 고치고, 회귀 커버리지를 추가하고, 원래 시나리오가 고쳐졌음을 증명한다. English: Use when a bug, test failure, build failure, integration failure, flaky behavior, performance regression, incident, or unexpected behavior appears. Before fixing, build a feedback loop, reproduce the reported failure, trace the failure boundary, compare working patterns, form falsifiable hypotheses, instrument one variable at a time, fix the root cause, add regression coverage, and prove the original scenario is fixed.
+description: "버그, 테스트 실패, 빌드 실패, 통합 실패, flaky 동작, 성능 저하, 장애, 예상 밖 동작이 나타났을 때 사용한다. 수정 전에 피드백 루프를 만들고, 보고된 실패를 재현하고, 실패 경계를 추적하고, 정상 패턴과 비교하고, 반증 가능한 가설을 세우고, 한 번에 하나의 변수만 계측하고, root cause를 고치고, 회귀 커버리지를 추가하고, 원래 시나리오가 고쳐졌음을 증명한다. English: Use when a bug, test failure, build failure, integration failure, flaky behavior, performance regression, incident, or unexpected behavior appears. Before fixing, build a feedback loop, reproduce the reported failure, trace the failure boundary, compare working patterns, form falsifiable hypotheses, instrument one variable at a time, fix the root cause, add regression coverage, and prove the original scenario is fixed."
 ---
 
 # Root-Cause Debugging

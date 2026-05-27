@@ -1,6 +1,6 @@
 ---
 name: quality-gates
-description: 작업이 완료됨, 수정됨, 통과함, 준비됨, 리뷰됨, 병합 가능함을 말하기 전에 사용한다. 신선한 검증 증거를 요구하고, 중요한 변경에는 리뷰를 요청하고, 리뷰 피드백을 기술적으로 평가하고, 항목별로 수정하며, 관찰된 결과만 보고한다. English: Use before claiming work is done, fixed, passing, ready, reviewed, or mergeable. Require fresh verification evidence, request review for substantial changes, evaluate review feedback technically, apply fixes one item at a time, and report only observed results.
+description: "작업이 완료됨, 수정됨, 통과함, 준비됨, 리뷰됨, 병합 가능함을 말하기 전에 사용한다. 신선한 검증 증거를 요구하고, 중요한 변경에는 리뷰를 요청하고, 리뷰 피드백을 기술적으로 평가하고, 항목별로 수정하며, 관찰된 결과만 보고한다. English: Use before claiming work is done, fixed, passing, ready, reviewed, or mergeable. Require fresh verification evidence, request review for substantial changes, evaluate review feedback technically, apply fixes one item at a time, and report only observed results."
 ---
 
 # Quality Gates

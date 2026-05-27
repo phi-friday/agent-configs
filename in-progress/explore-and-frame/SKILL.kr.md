@@ -1,6 +1,6 @@
 ---
 name: explore-and-frame
-description: 구현 전에 사용자가 막연한 아이디어, 불명확한 문제, 낯선 코드 영역, 선택지 비교, 범위 질문, PRD 요청을 가져왔을 때 사용한다. 구현하지 않고 사고 전용 모드로 조사, 시각화, 가정 검토, 접근안 비교, 코드 맥락 지도화, 결정 프레이밍을 수행한다. English: Use before implementation when the user brings a vague idea, unclear problem, unfamiliar code area, option comparison, scope question, or PRD request. Enter a thinking-only mode: investigate, visualize, question assumptions, compare approaches, map code context, and frame the decision without implementing.
+description: "구현 전에 사용자가 막연한 아이디어, 불명확한 문제, 낯선 코드 영역, 선택지 비교, 범위 질문, PRD 요청을 가져왔을 때 사용한다. 구현하지 않고 사고 전용 모드로 조사, 시각화, 가정 검토, 접근안 비교, 코드 맥락 지도화, 결정 프레이밍을 수행한다. English: Use before implementation when the user brings a vague idea, unclear problem, unfamiliar code area, option comparison, scope question, or PRD request. Enter a thinking-only mode: investigate, visualize, question assumptions, compare approaches, map code context, and frame the decision without implementing."
 ---
 
 # Explore and Frame

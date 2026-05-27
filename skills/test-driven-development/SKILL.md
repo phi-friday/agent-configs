@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing a feature, bug fix, refactor, behavior change, or new public interface with test-first discipline. Enforce red-green-refactor: write one failing behavior test, watch it fail for the right reason, write minimal production code, watch it pass, then refactor while green. 한국어: 기능, 버그 수정, 리팩터링, 동작 변경, 새 public interface를 test-first로 구현할 때 사용한다. red-green-refactor를 강제한다: 동작 테스트 하나를 먼저 쓰고, 올바른 이유로 실패하는 것을 보고, 최소 production code로 통과시키고, 통과 상태에서만 리팩터링한다.
+description: "Use when implementing a feature, bug fix, refactor, behavior change, or new public interface with test-first discipline. Enforce red-green-refactor: write one failing behavior test, watch it fail for the right reason, write minimal production code, watch it pass, then refactor while green. 한국어: 기능, 버그 수정, 리팩터링, 동작 변경, 새 public interface를 test-first로 구현할 때 사용한다. red-green-refactor를 강제한다: 동작 테스트 하나를 먼저 쓰고, 올바른 이유로 실패하는 것을 보고, 최소 production code로 통과시키고, 통과 상태에서만 리팩터링한다."
 ---
 
 # Test-Driven Development
