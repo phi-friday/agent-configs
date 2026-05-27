@@ -19,6 +19,17 @@ ROOT CAUSE 전에 FIX 없음.
 
 증상을 먼저 patch하지 않는다. 실패를 재현하고 원인이 증거로 뒷받침되기 전에는 retry, timeout, fallback, warning suppression, config change, broad refactor, “while here” cleanup을 추가하지 않는다.
 
+## Supporting References
+
+이 파일은 실행 checklist로 유지한다. 아래 파일은 해당 technique이 필요할 때만 연다.
+
+- `references/feedback-loops.md` — reproduction loop 선택과 개선.
+- `references/root-cause-tracing.md` — bad value, state, component boundary를 source까지 추적.
+- `references/condition-based-waiting.md` — flaky async test의 guessed sleep 제거.
+- `references/defense-in-depth.md` — source를 확인한 뒤 layered guard 추가.
+- `references/scripts/hitl-loop.template.sh` — manual reproduction이 불가피할 때 절차화.
+- `references/scripts/find-polluter.template.sh` — unwanted state를 만드는 test/command 격리.
+
 ## Use When
 
 다음에 사용한다.
@@ -59,6 +70,8 @@ loop를 믿기 전에 개선한다.
 flaky bug에서는 먼저 재현율을 올린다. 더 자주 반복하고, 병렬화하고, stress를 추가하고, timing pressure를 넣고, race를 좁혀 추론 가능한 빈도로 실패하게 만든다.
 
 loop를 만들 수 없다면 멈추고 필요한 artifact나 접근권을 정확히 말한다: environment access, log, trace, core dump, HAR file, timestamp가 있는 screen recording, captured payload, temporary instrumentation 허가.
+
+test, CLI, HTTP, browser, replay, stress, differential, bisection, manual loop 중 무엇을 쓸지 고를 때는 `references/feedback-loops.md`를 사용한다.
 
 ## Phase 2 — Reproduce and Observe
 
@@ -116,6 +129,8 @@ component A ──payload/config/state──▶ boundary ──payload/config/st
 
 bad state가 시작되는 곳을 고친다. 마지막에 폭발한 줄을 고치는 것이 아니다.
 
+failure가 stack 깊은 곳에서 나타나거나 component를 건너거나 working-vs-broken 비교가 필요하면 `references/root-cause-tracing.md`를 사용한다.
+
 ## Phase 4 — Form Ranked Hypotheses
 
 어떤 fix도 테스트하기 전에 3–5개 ranked hypothesis를 쓴다.
@@ -161,6 +176,8 @@ instrumentation은 Phase 4의 hypothesis 하나에 답해야 한다.
 - **State pollution**: test, input, lifecycle step에 대한 bisection으로 polluter를 격리한다.
 - **External/manual step**: structured prompt loop로 사람을 안내하고 답변을 machine-readable output으로 캡처한다.
 
+flaky async wait에는 `references/condition-based-waiting.md`를 사용한다. state pollution에는 `references/scripts/find-polluter.template.sh`, manual reproduction에는 `references/scripts/hitl-loop.template.sh`를 사용한다.
+
 ## Phase 6 — Fix the Root Cause
 
 production code를 바꾸기 전에 correct seam이 있으면 실패하는 regression test를 만든다.
@@ -176,6 +193,8 @@ correct seam이 없다면 그 사실을 문서화한다. architecture가 이 bug
 3. 관련 없는 refactor, cleanup, retry, fallback, broad validation, behavior change를 묶지 않는다.
 4. invalid data가 여러 layer를 지나면 source를 안 뒤에만 defense-in-depth를 추가한다: boundary validation, domain invariant, environment guard, permanent observability는 각각 서로 다른 failure mode를 잡아야 한다.
 5. 원래의 unminimized feedback loop를 다시 실행한다.
+
+layered validation, guard, permanent observability를 추가하기 전에는 `references/defense-in-depth.md`를 사용한다.
 
 crash point만 가리는 fix는 incomplete다.
 

@@ -19,6 +19,17 @@ NO COMPLETION WITHOUT THE ORIGINAL SCENARIO PASSING.
 
 Never patch the symptom first. Do not add retries, timeouts, fallbacks, warning suppression, config changes, broad refactors, or “while here” cleanup until the failure has been reproduced and the cause is supported by evidence.
 
+## Supporting References
+
+Keep this file as the operating checklist. Open the supporting files only when that technique is relevant:
+
+- `references/feedback-loops.md` — choosing and sharpening the reproduction loop.
+- `references/root-cause-tracing.md` — tracing bad values, state, and component boundaries back to the source.
+- `references/condition-based-waiting.md` — replacing guessed sleeps in flaky async tests.
+- `references/defense-in-depth.md` — adding layered guards after the source is known.
+- `references/scripts/hitl-loop.template.sh` — structuring unavoidable manual reproduction.
+- `references/scripts/find-polluter.template.sh` — isolating tests or commands that create unwanted state.
+
 ## Use When
 
 Use this for:
@@ -59,6 +70,8 @@ Improve the loop before trusting it:
 For flaky bugs, first raise the reproduction rate. Loop more often, parallelize, add stress, inject timing pressure, or isolate the race until the failure is common enough to reason about.
 
 If no loop is possible, stop and state exactly what artifact or access is missing: environment access, logs, trace, core dump, HAR file, screen recording with timestamps, captured payload, or permission for temporary instrumentation.
+
+Use `references/feedback-loops.md` when choosing between test, CLI, HTTP, browser, replay, stress, differential, bisection, or manual loops.
 
 ## Phase 2 — Reproduce and Observe
 
@@ -116,6 +129,8 @@ When similar working code exists, compare it before fixing. List all differences
 
 Fix the source of the bad state, not the line where it finally explodes.
 
+Use `references/root-cause-tracing.md` when the failure appears deep in a stack, crosses components, or requires working-vs-broken comparison.
+
 ## Phase 4 — Form Ranked Hypotheses
 
 Before testing any fix, write 3–5 ranked hypotheses.
@@ -161,6 +176,8 @@ Use specialized probes when relevant:
 - **State pollution**: isolate the polluter with bisection across tests, inputs, or lifecycle steps.
 - **External/manual step**: drive the human with a structured prompt loop and capture exact answers as machine-readable output.
 
+Use `references/condition-based-waiting.md` for flaky async waits. Use `references/scripts/find-polluter.template.sh` for state pollution and `references/scripts/hitl-loop.template.sh` for unavoidable manual reproduction.
+
 ## Phase 6 — Fix the Root Cause
 
 Before changing production code, create a failing regression test if a correct seam exists.
@@ -176,6 +193,8 @@ Then:
 3. Do not bundle unrelated refactors, cleanup, retries, fallbacks, broad validation, or behavior changes.
 4. If invalid data crosses multiple layers, add defense-in-depth only after the source is known: boundary validation, domain invariant, environment guard, or permanent observability must each catch a distinct failure mode.
 5. Re-run the original unminimized feedback loop.
+
+Use `references/defense-in-depth.md` before adding layered validation, guards, or permanent observability.
 
 A fix that only masks the crash point is incomplete.
 
