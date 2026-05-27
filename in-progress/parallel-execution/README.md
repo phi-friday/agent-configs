@@ -1,55 +1,60 @@
 # parallel-execution
 
-독립적인 작업을 여러 subagent에 분산하고, controller가 통합과 최종 검증을 책임지는 in-progress 스킬이다.
+[English](README.md) | [한국어](README.kr.md)
 
-## 구성
+`parallel-execution` is an in-progress skill for splitting independent work across subagents while the controller owns integration and final verification.
+
+## Layout
 
 ```text
 parallel-execution/
 ├─ SKILL.md
-├─ skill.kr.md
+├─ SKILL.kr.md
 ├─ README.md
+├─ README.kr.md
 └─ references/
    ├─ task-decomposition.md
    ├─ subagent-prompts.md
    └─ review-integration.md
 ```
 
-## 파일 역할
+## File Roles
 
-- `SKILL.md`: 기본 스킬 정의와 병렬 실행 checklist.
-- `skill.kr.md`: `SKILL.md`의 한국어판.
-- `references/task-decomposition.md`: 병렬화 가능한 task와 순차화해야 하는 task를 구분하는 기준.
-- `references/subagent-prompts.md`: self-contained subagent assignment 작성 기준과 template.
-- `references/review-integration.md`: subagent 결과 검토, conflict 확인, 최종 검증 기준.
+- `SKILL.md`: Base skill definition and parallel-execution checklist.
+- `SKILL.kr.md`: Korean translation of `SKILL.md`.
+- `README.md`: English source README.
+- `README.kr.md`: Korean translation of this README.
+- `references/task-decomposition.md`: Criteria for separating parallelizable tasks from tasks that must remain sequential.
+- `references/subagent-prompts.md`: Criteria and templates for self-contained subagent assignments.
+- `references/review-integration.md`: Standards for reviewing subagent results, checking conflicts, and doing final verification.
 
-## 사용 범위
+## Scope
 
-사용할 때:
+Use this skill when:
 
-- 독립적인 implementation task가 여러 개 있을 때
-- 서로 다른 file/subsystem의 failure를 나눠 조사할 때
-- codebase investigation이나 review를 병렬화할 때
-- 겹치지 않는 파일의 mechanical edit를 분산할 때
+- There are multiple independent implementation tasks.
+- Failures in different files or subsystems can be investigated separately.
+- Codebase investigation or review can be parallelized.
+- Mechanical edits to non-overlapping files can be distributed.
 
-핵심 규칙:
+Core rule:
 
 ```text
-분해 → self-contained dispatch → 결과 검토 → 통합 → 중앙 검증
+decompose → self-contained dispatch → review results → integrate → central verification
 ```
 
-subagent는 자기 task를 수행하고 보고한다. 통합과 최종 검증은 controller가 수행한다.
+Subagents perform and report on their own tasks. The controller performs integration and final verification.
 
-## 레퍼런스 출처
+## Reference Sources
 
-이 스킬은 다음 레퍼런스를 바탕으로 정리했다.
+This skill is based on these references:
 
 - `obra/superpowers/skills/subagent-driven-development`
 - `obra/superpowers/skills/dispatching-parallel-agents`
 
-## 참고한 파일
+## Reference Files
 
-다음 파일이 업데이트되면 이 스킬도 다시 검토한다.
+Review this skill again when these files change:
 
 - `references/obra/superpowers/skills/subagent-driven-development/SKILL.md`
 - `references/obra/superpowers/skills/subagent-driven-development/implementer-prompt.md`
@@ -57,4 +62,4 @@ subagent는 자기 task를 수행하고 보고한다. 통합과 최종 검증은
 - `references/obra/superpowers/skills/subagent-driven-development/code-quality-reviewer-prompt.md`
 - `references/obra/superpowers/skills/dispatching-parallel-agents/SKILL.md`
 
-원본 저장소의 라이선스 고지는 루트 `NOTICE.md`를 따른다.
+License notices for the original repositories are covered by the root `NOTICE.md`.

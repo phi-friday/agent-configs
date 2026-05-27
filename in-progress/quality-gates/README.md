@@ -1,55 +1,60 @@
 # quality-gates
 
-완료, 통과, 수정, 리뷰 완료, 병합 가능 같은 상태를 선언하기 전에 fresh evidence와 review gate를 확인하는 in-progress 스킬이다.
+[English](README.md) | [한국어](README.kr.md)
 
-## 구성
+`quality-gates` is an in-progress skill for checking fresh evidence and review gates before declaring states such as done, passing, fixed, review complete, or ready to merge.
+
+## Layout
 
 ```text
 quality-gates/
 ├─ SKILL.md
-├─ skill.kr.md
+├─ SKILL.kr.md
 ├─ README.md
+├─ README.kr.md
 └─ references/
    ├─ verification-evidence.md
    ├─ code-review-request.md
    └─ review-feedback-handling.md
 ```
 
-## 파일 역할
+## File Roles
 
-- `SKILL.md`: 기본 스킬 정의와 quality gate checklist.
-- `skill.kr.md`: `SKILL.md`의 한국어판.
-- `references/verification-evidence.md`: claim별 필요한 검증 증거 기준.
-- `references/code-review-request.md`: code review 요청 기준과 template.
-- `references/review-feedback-handling.md`: review feedback 평가, 적용, pushback 기준.
+- `SKILL.md`: Base skill definition and quality-gate checklist.
+- `SKILL.kr.md`: Korean translation of `SKILL.md`.
+- `README.md`: English source README.
+- `README.kr.md`: Korean translation of this README.
+- `references/verification-evidence.md`: Standards for what verification evidence is required for each claim.
+- `references/code-review-request.md`: Criteria and template for requesting code review.
+- `references/review-feedback-handling.md`: Criteria for evaluating, applying, and pushing back on review feedback.
 
-## 사용 범위
+## Scope
 
-사용할 때:
+Use this skill when:
 
-- 작업 완료를 선언하기 전
-- bug fixed, tests pass, ready to merge라고 말하기 전
-- 중요한 변경에 대해 review를 요청할 때
-- review feedback을 받았을 때
-- subagent 결과를 완료로 받아들일 때
+- Before declaring work complete.
+- Before saying a bug is fixed, tests pass, or a change is ready to merge.
+- Requesting review for an important change.
+- Receiving review feedback.
+- Accepting a subagent result as complete.
 
-핵심 규칙:
+Core rule:
 
 ```text
-claim 식별 → fresh evidence 확보 → 필요한 review → feedback 처리 → 관찰한 결과만 보고
+identify claim → gather fresh evidence → get required review → handle feedback → report only observed results
 ```
 
-## 레퍼런스 출처
+## Reference Sources
 
-이 스킬은 다음 레퍼런스를 바탕으로 정리했다.
+This skill is based on these references:
 
 - `obra/superpowers/skills/verification-before-completion`
 - `obra/superpowers/skills/requesting-code-review`
 - `obra/superpowers/skills/receiving-code-review`
 
-## 참고한 파일
+## Reference Files
 
-다음 파일이 업데이트되면 이 스킬도 다시 검토한다.
+Review this skill again when these files change:
 
 - `references/INTERESTED_SKILLS_TAXONOMY.ko.md`
 - `references/obra/superpowers/skills/verification-before-completion/SKILL.md`
@@ -57,4 +62,4 @@ claim 식별 → fresh evidence 확보 → 필요한 review → feedback 처리 
 - `references/obra/superpowers/skills/requesting-code-review/code-reviewer.md`
 - `references/obra/superpowers/skills/receiving-code-review/SKILL.md`
 
-원본 저장소의 라이선스 고지는 루트 `NOTICE.md`를 따른다.
+License notices for the original repositories are covered by the root `NOTICE.md`.

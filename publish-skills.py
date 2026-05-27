@@ -1,8 +1,9 @@
-#!/usr/bin/env -S uv run --script --python 3.14
+#!/usr/bin/env -S uv run --script --python 3.14t
 # /// script
 # requires-python = ">=3.14,<3.15"
 # dependencies = []
 # ///
+# ruff: noqa: T201,D103
 
 from __future__ import annotations
 
@@ -13,8 +14,11 @@ import re
 import shutil
 import subprocess
 import sys
-from collections.abc import Callable, Iterable
-from pathlib import Path, PurePosixPath
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
 
 START_MARKER = "<!-- publish-skills:reference-commits:start -->"
 END_MARKER = "<!-- publish-skills:reference-commits:end -->"
@@ -41,23 +45,14 @@ def require_file(path: Path, label: str) -> None:
 
 def run_stdout(args: list[str], cwd: Path) -> str:
     completed = subprocess.run(
-        args,
-        cwd=cwd,
-        check=True,
-        stdout=subprocess.PIPE,
-        text=True,
+        args, cwd=cwd, check=True, stdout=subprocess.PIPE, text=True
     )
     return completed.stdout.strip()
 
 
 def optional_stdout(args: list[str], cwd: Path) -> str:
     completed = subprocess.run(
-        args,
-        cwd=cwd,
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
+        args, cwd=cwd, check=False, capture_output=True, text=True
     )
     if completed.returncode != 0:
         return ""
@@ -102,7 +97,7 @@ def locked_skill_roots(lock_file: Path) -> set[str]:
         if not isinstance(skill_path, str):
             continue
 
-        parts = PurePosixPath(skill_path).parts
+        parts = Path(skill_path).parts
         if len(parts) >= 2 and parts[0] == "skills":
             roots.add(parts[1])
 
@@ -203,23 +198,20 @@ def reference_commit_block(commits: dict[str, str], submodules: list[str]) -> st
         f"- `{submodule}`: `{commits[submodule]}`" for submodule in submodules
     ]
 
-    return "\n".join(
-        [
-            START_MARKER,
-            "## 레퍼런스 커밋",
-            "",
-            "다음 submodule 커밋 기준으로 퍼블리시했다.",
-            "",
-            *commit_lines,
-            END_MARKER,
-        ]
-    )
+    return "\n".join([
+        START_MARKER,
+        "## Reference Commits",
+        "",
+        "Published against these submodule commits.",
+        "",
+        *commit_lines,
+        END_MARKER,
+    ])
 
 
 def remove_existing_commit_block(text: str) -> str:
     pattern = re.compile(
-        rf"\n*{re.escape(START_MARKER)}.*?{re.escape(END_MARKER)}\n*",
-        re.DOTALL,
+        rf"\n*{re.escape(START_MARKER)}.*?{re.escape(END_MARKER)}\n*", re.DOTALL
     )
     return pattern.sub("\n", text).rstrip() + "\n"
 
@@ -229,15 +221,17 @@ def with_reference_commit_block(text: str, block: str) -> str:
         without_old = remove_existing_commit_block(text).rstrip()
         return f"{without_old}\n\n{block}\n"
 
-    if "\n## 라이선스 메모" in text:
+    if "\n## License Note" in text:
         return (
             text.replace(
-                "\n## 라이선스 메모", f"\n\n{block}\n\n## 라이선스 메모", 1
+                "\n## License Note", f"\n\n{block}\n\n## License Note", 1
             ).rstrip()
             + "\n"
         )
 
-    license_match = re.search(r"\n원본 저장소의 라이선스 고지는 .*\n?\Z", text)
+    license_match = re.search(
+        r"\nLicense notices for the original repositories are covered by .*\n?\Z", text
+    )
     if license_match:
         return (
             text[: license_match.start()].rstrip()
@@ -249,9 +243,7 @@ def with_reference_commit_block(text: str, block: str) -> str:
 
 
 def update_reference_commits(
-    readme_path: Path,
-    submodules: list[str],
-    commits: dict[str, str],
+    readme_path: Path, submodules: list[str], commits: dict[str, str]
 ) -> None:
     if not readme_path.is_file():
         return
@@ -262,8 +254,7 @@ def update_reference_commits(
         updated = remove_existing_commit_block(text)
     else:
         updated = with_reference_commit_block(
-            text,
-            reference_commit_block(commits, selected),
+            text, reference_commit_block(commits, selected)
         )
     readme_path.write_text(updated, encoding="utf-8")
 

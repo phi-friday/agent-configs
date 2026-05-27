@@ -1,14 +1,17 @@
 # root-cause-debugging
 
-버그, 실패, 성능 저하, flaky 동작, 통합 문제를 수정하기 전에 root cause를 증거로 확인하도록 강제하는 in-progress 스킬이다.
+[English](README.md) | [한국어](README.kr.md)
 
-## 구성
+`root-cause-debugging` is an in-progress skill that forces evidence-based confirmation of the root cause before fixing bugs, failures, performance regressions, flaky behavior, or integration problems.
+
+## Layout
 
 ```text
 root-cause-debugging/
 ├─ SKILL.md
-├─ skill.kr.md
+├─ SKILL.kr.md
 ├─ README.md
+├─ README.kr.md
 └─ references/
    ├─ feedback-loops.md
    ├─ root-cause-tracing.md
@@ -19,46 +22,48 @@ root-cause-debugging/
       └─ find-polluter.template.sh
 ```
 
-## 파일 역할
+## File Roles
 
-- `SKILL.md`: 기본 스킬 정의와 실행 checklist.
-- `skill.kr.md`: `SKILL.md`의 한국어판.
-- `references/feedback-loops.md`: 재현 loop 선택과 품질 기준.
-- `references/root-cause-tracing.md`: bad value/state를 source까지 추적하는 절차.
-- `references/condition-based-waiting.md`: fake timer 우선 원칙과 condition-based wait 패턴.
-- `references/defense-in-depth.md`: root cause 확인 뒤 layered guard를 추가하는 기준.
-- `references/scripts/hitl-loop.template.sh`: manual reproduction이 불가피할 때 쓰는 template.
-- `references/scripts/find-polluter.template.sh`: unwanted state를 만드는 test/command를 격리하는 template.
+- `SKILL.md`: Base skill definition and execution checklist.
+- `SKILL.kr.md`: Korean translation of `SKILL.md`.
+- `README.md`: English source README.
+- `README.kr.md`: Korean translation of this README.
+- `references/feedback-loops.md`: Criteria for choosing and evaluating reproduction loops.
+- `references/root-cause-tracing.md`: Procedure for tracing bad values or state back to the source.
+- `references/condition-based-waiting.md`: Fake-timer-first principle and condition-based wait patterns.
+- `references/defense-in-depth.md`: Criteria for adding layered guards after the root cause is confirmed.
+- `references/scripts/hitl-loop.template.sh`: Template for cases where manual reproduction is unavoidable.
+- `references/scripts/find-polluter.template.sh`: Template for isolating the test or command that creates unwanted state.
 
-## 사용 범위
+## Scope
 
-사용할 때:
+Use this skill for:
 
-- test/build/CI 실패
-- runtime exception 또는 잘못된 출력
-- flaky test나 timing 문제
-- integration failure
-- performance regression
-- 이미 시도한 fix가 실패한 경우
+- Test, build, or CI failures.
+- Runtime exceptions or incorrect output.
+- Flaky tests or timing problems.
+- Integration failures.
+- Performance regressions.
+- Cases where an already attempted fix failed.
 
-핵심 규칙:
+Core rule:
 
 ```text
-재현 → 관찰 → 추적 → 가설 → 계측 → 근원 수정 → 검증
+reproduce → observe → trace → hypothesize → instrument → fix root cause → verify
 ```
 
-root cause를 확인하기 전에는 retry, timeout, fallback, warning suppression, broad refactor를 추가하지 않는다.
+Do not add retries, timeouts, fallbacks, warning suppression, or broad refactors before confirming the root cause.
 
-## 레퍼런스 출처
+## Reference Sources
 
-이 스킬은 다음 레퍼런스를 바탕으로 정리했다.
+This skill is based on these references:
 
 - `mattpocock/skills/skills/engineering/diagnose`
 - `obra/superpowers/skills/systematic-debugging`
 
-## 참고한 파일
+## Reference Files
 
-다음 파일이 업데이트되면 이 스킬도 다시 검토한다.
+Review this skill again when these files change:
 
 - `references/mattpocock/skills/skills/engineering/diagnose/SKILL.md`
 - `references/mattpocock/skills/skills/engineering/diagnose/scripts/hitl-loop.template.sh`
@@ -74,4 +79,4 @@ root cause를 확인하기 전에는 retry, timeout, fallback, warning suppressi
 - `references/obra/superpowers/skills/systematic-debugging/test-pressure-2.md`
 - `references/obra/superpowers/skills/systematic-debugging/test-pressure-3.md`
 
-원본 저장소의 라이선스 고지는 루트 `NOTICE.md`를 따른다.
+License notices for the original repositories are covered by the root `NOTICE.md`.

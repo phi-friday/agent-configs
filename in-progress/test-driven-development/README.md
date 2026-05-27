@@ -1,14 +1,17 @@
 # test-driven-development
 
-기능, 버그 수정, 리팩터링, 동작 변경을 test-first로 구현하기 위한 in-progress 스킬이다.
+[English](README.md) | [한국어](README.kr.md)
 
-## 구성
+`test-driven-development` is an in-progress skill for implementing features, bug fixes, refactors, and behavior changes test-first.
+
+## Layout
 
 ```text
 test-driven-development/
 ├─ SKILL.md
-├─ skill.kr.md
+├─ SKILL.kr.md
 ├─ README.md
+├─ README.kr.md
 └─ references/
    ├─ test-quality.md
    ├─ mocking-guidelines.md
@@ -16,43 +19,45 @@ test-driven-development/
    └─ refactoring.md
 ```
 
-## 파일 역할
+## File Roles
 
-- `SKILL.md`: 기본 스킬 정의와 RED-GREEN-REFACTOR checklist.
-- `skill.kr.md`: `SKILL.md`의 한국어판.
-- `references/test-quality.md`: public behavior 중심 테스트 기준.
-- `references/mocking-guidelines.md`: mock 사용 기준과 anti-pattern.
-- `references/interface-design.md`: 테스트하기 쉬운 interface 설계 기준.
-- `references/refactoring.md`: green 상태에서의 refactor 기준.
+- `SKILL.md`: Base skill definition and RED-GREEN-REFACTOR checklist.
+- `SKILL.kr.md`: Korean translation of `SKILL.md`.
+- `README.md`: English source README.
+- `README.kr.md`: Korean translation of this README.
+- `references/test-quality.md`: Criteria for tests centered on public behavior.
+- `references/mocking-guidelines.md`: Mocking criteria and anti-patterns.
+- `references/interface-design.md`: Interface-design criteria for testable code.
+- `references/refactoring.md`: Refactoring criteria after the code is green.
 
-## 사용 범위
+## Scope
 
-사용할 때:
+Use this skill for:
 
-- 새 기능 구현
-- 버그 수정의 regression test 작성
-- 동작 변경
-- 안전망이 필요한 refactor
-- 새 public API, command, UI flow 구현
+- Implementing new features.
+- Writing regression tests for bug fixes.
+- Behavior changes.
+- Refactors that need a safety net.
+- New public APIs, commands, or UI flows.
 
-핵심 규칙:
+Core rule:
 
 ```text
 RED → GREEN → REFACTOR
 ```
 
-production code를 쓰기 전에 실패하는 behavior test를 먼저 보고, green 이후에만 refactor한다.
+See the failing behavior test before writing production code, and refactor only after the test is green.
 
-## 레퍼런스 출처
+## Reference Sources
 
-이 스킬은 다음 레퍼런스를 바탕으로 정리했다.
+This skill is based on these references:
 
 - `mattpocock/skills/skills/engineering/tdd`
 - `obra/superpowers/skills/test-driven-development`
 
-## 참고한 파일
+## Reference Files
 
-다음 파일이 업데이트되면 이 스킬도 다시 검토한다.
+Review this skill again when these files change:
 
 - `references/mattpocock/skills/skills/engineering/tdd/SKILL.md`
 - `references/mattpocock/skills/skills/engineering/tdd/tests.md`
@@ -63,4 +68,4 @@ production code를 쓰기 전에 실패하는 behavior test를 먼저 보고, gr
 - `references/obra/superpowers/skills/test-driven-development/SKILL.md`
 - `references/obra/superpowers/skills/test-driven-development/testing-anti-patterns.md`
 
-원본 저장소의 라이선스 고지는 루트 `NOTICE.md`를 따른다.
+License notices for the original repositories are covered by the root `NOTICE.md`.
