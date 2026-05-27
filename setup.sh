@@ -7,6 +7,11 @@ LINK_PATH="$HOME/.agents"
 echo "[INFO] script dir: $SCRIPT_DIR"
 echo "[INFO] link path : $LINK_PATH"
 
+if [[ -e "$LINK_PATH" || -L "$LINK_PATH" ]]; then
+	echo "[ERROR] link path already exists: $LINK_PATH" >&2
+	exit 1
+fi
+
 echo "[INFO] creating symlink..."
 ln -s "$SCRIPT_DIR" "$LINK_PATH"
 
