@@ -15,10 +15,13 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NoReturn
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
+
+MIN_SKILL_PATH_PARTS = 2
+GIT_CONFIG_OUTPUT_FIELDS = 2
 
 START_MARKER = "<!-- publish-skills:reference-commits:start -->"
 END_MARKER = "<!-- publish-skills:reference-commits:end -->"
@@ -28,7 +31,7 @@ def log(message: str) -> None:
     print(f"[publish-skills] {message}")
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     print(f"[publish-skills] {message}", file=sys.stderr)
     raise SystemExit(1)
 
@@ -44,14 +47,18 @@ def require_file(path: Path, label: str) -> None:
 
 
 def run_stdout(args: list[str], cwd: Path) -> str:
-    completed = subprocess.run(
+    # S603: this helper is only used for fixed git subcommands assembled below.
+    # shell=False is the subprocess default, so repo paths stay argv values, not code.
+    completed = subprocess.run(  # noqa: S603
         args, cwd=cwd, check=True, stdout=subprocess.PIPE, text=True
     )
     return completed.stdout.strip()
 
 
 def optional_stdout(args: list[str], cwd: Path) -> str:
-    completed = subprocess.run(
+    # S603: this helper is only used for fixed git subcommands assembled below.
+    # shell=False is the subprocess default, so repo paths stay argv values, not code.
+    completed = subprocess.run(  # noqa: S603
         args, cwd=cwd, check=False, capture_output=True, text=True
     )
     if completed.returncode != 0:
@@ -98,7 +105,7 @@ def locked_skill_roots(lock_file: Path) -> set[str]:
             continue
 
         parts = Path(skill_path).parts
-        if len(parts) >= 2 and parts[0] == "skills":
+        if len(parts) >= MIN_SKILL_PATH_PARTS and parts[0] == "skills":
             roots.add(parts[1])
 
     return roots
@@ -135,7 +142,7 @@ def submodule_paths(repo_root: Path) -> list[str]:
     paths: list[str] = []
     for line in output.splitlines():
         parts = line.split(maxsplit=1)
-        if len(parts) == 2:
+        if len(parts) == GIT_CONFIG_OUTPUT_FIELDS:
             paths.append(parts[1])
     return sorted(paths)
 
