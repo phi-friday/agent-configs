@@ -1,0 +1,9 @@
+[submodule "references/mattpocock/skills"]
+	path = references/mattpocock/skills
+	url = https://github.com/mattpocock/skills.git
+[submodule "references/obra/superpowers"]
+	path = references/obra/superpowers
+	url = https://github.com/obra/superpowers.git
+[submodule "references/Fission-AI/OpenSpec"]
+	path = references/Fission-AI/OpenSpec
+	url = https://github.com/Fission-AI/OpenSpec.git
