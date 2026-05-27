@@ -56,4 +56,22 @@ root cause를 확인하기 전에는 retry, timeout, fallback, warning suppressi
 - `mattpocock/skills/skills/engineering/diagnose`
 - `obra/superpowers/skills/systematic-debugging`
 
+## 참고한 파일
+
+다음 파일이 업데이트되면 이 스킬도 다시 검토한다.
+
+- `references/mattpocock/skills/skills/engineering/diagnose/SKILL.md`
+- `references/mattpocock/skills/skills/engineering/diagnose/scripts/hitl-loop.template.sh`
+- `references/obra/superpowers/skills/systematic-debugging/SKILL.md`
+- `references/obra/superpowers/skills/systematic-debugging/root-cause-tracing.md`
+- `references/obra/superpowers/skills/systematic-debugging/defense-in-depth.md`
+- `references/obra/superpowers/skills/systematic-debugging/condition-based-waiting.md`
+- `references/obra/superpowers/skills/systematic-debugging/condition-based-waiting-example.ts`
+- `references/obra/superpowers/skills/systematic-debugging/find-polluter.sh`
+- `references/obra/superpowers/skills/systematic-debugging/CREATION-LOG.md`
+- `references/obra/superpowers/skills/systematic-debugging/test-academic.md`
+- `references/obra/superpowers/skills/systematic-debugging/test-pressure-1.md`
+- `references/obra/superpowers/skills/systematic-debugging/test-pressure-2.md`
+- `references/obra/superpowers/skills/systematic-debugging/test-pressure-3.md`
+
 원본 저장소의 라이선스 고지는 루트 `NOTICE.md`를 따른다.

@@ -50,4 +50,17 @@ production code를 쓰기 전에 실패하는 behavior test를 먼저 보고, gr
 - `mattpocock/skills/skills/engineering/tdd`
 - `obra/superpowers/skills/test-driven-development`
 
+## 참고한 파일
+
+다음 파일이 업데이트되면 이 스킬도 다시 검토한다.
+
+- `references/mattpocock/skills/skills/engineering/tdd/SKILL.md`
+- `references/mattpocock/skills/skills/engineering/tdd/tests.md`
+- `references/mattpocock/skills/skills/engineering/tdd/mocking.md`
+- `references/mattpocock/skills/skills/engineering/tdd/interface-design.md`
+- `references/mattpocock/skills/skills/engineering/tdd/deep-modules.md`
+- `references/mattpocock/skills/skills/engineering/tdd/refactoring.md`
+- `references/obra/superpowers/skills/test-driven-development/SKILL.md`
+- `references/obra/superpowers/skills/test-driven-development/testing-anti-patterns.md`
+
 원본 저장소의 라이선스 고지는 루트 `NOTICE.md`를 따른다.

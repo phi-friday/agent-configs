@@ -144,6 +144,18 @@ to-prd               → 정리된 결정을 PRD/결정 프레임으로 압축
 
 이 스킬은 구현 프로세스 전체가 아니라, 구현으로 들어가기 전의 탐색과 framing만 담당한다.
 
+## 참고한 파일
+
+다음 파일이 업데이트되면 이 스킬도 다시 검토한다.
+
+- `references/obra/superpowers/skills/brainstorming/SKILL.md`
+- `references/obra/superpowers/skills/brainstorming/visual-companion.md`
+- `references/obra/superpowers/skills/brainstorming/spec-document-reviewer-prompt.md`
+- `references/Fission-AI/OpenSpec/src/core/templates/workflows/explore.ts`
+- `references/Fission-AI/OpenSpec/openspec/explorations/explore-workflow-ux.md`
+- `references/mattpocock/skills/skills/engineering/zoom-out/SKILL.md`
+- `references/mattpocock/skills/skills/engineering/to-prd/SKILL.md`
+
 ## 라이선스 메모
 
 레퍼런스 저장소들은 MIT License다. 원문, 체크리스트, 템플릿, 스크립트를 실질적으로 복사하거나 수정해 포함하는 경우 `NOTICE.md`의 고지를 유지해야 한다.
