@@ -25,7 +25,7 @@ Keep this file as the operating checklist. Open the supporting files only when t
 
 - `references/feedback-loops.md` — choosing and sharpening the reproduction loop.
 - `references/root-cause-tracing.md` — tracing bad values, state, and component boundaries back to the source.
-- `references/condition-based-waiting.md` — replacing guessed sleeps in flaky async tests.
+- `references/condition-based-waiting.md` — using fake timers first, then condition-based waits when real async work must complete.
 - `references/defense-in-depth.md` — adding layered guards after the source is known.
 - `references/scripts/hitl-loop.template.sh` — structuring unavoidable manual reproduction.
 - `references/scripts/find-polluter.template.sh` — isolating tests or commands that create unwanted state.
@@ -172,11 +172,11 @@ Do not “log everything and search later.” Noise is not evidence.
 Use specialized probes when relevant:
 
 - **Performance regression**: establish baseline and current measurements; use profiler output, query plans, allocation data, timing harnesses, or regression bisection.
-- **Flaky waiting**: wait for the condition that matters, not a guessed sleep. Use arbitrary timeouts only when timing itself is the behavior under test and document why.
+- **Flaky waiting**: use fake timers/virtual clocks first when behavior is timer-driven; otherwise wait for the condition that matters, not a guessed sleep. Use fixed sleeps only when elapsed time itself is the behavior under test and document why.
 - **State pollution**: isolate the polluter with bisection across tests, inputs, or lifecycle steps.
 - **External/manual step**: drive the human with a structured prompt loop and capture exact answers as machine-readable output.
 
-Use `references/condition-based-waiting.md` for flaky async waits. Use `references/scripts/find-polluter.template.sh` for state pollution and `references/scripts/hitl-loop.template.sh` for unavoidable manual reproduction.
+Use `references/condition-based-waiting.md` for timer-driven tests, flaky async waits, and the fake-timer vs polling decision. Use `references/scripts/find-polluter.template.sh` for state pollution and `references/scripts/hitl-loop.template.sh` for unavoidable manual reproduction.
 
 ## Phase 6 — Fix the Root Cause
 

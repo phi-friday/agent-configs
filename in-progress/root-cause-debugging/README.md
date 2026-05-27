@@ -25,7 +25,7 @@ root-cause-debugging/
 - `skill.kr.md`: `SKILL.md`의 한국어판.
 - `references/feedback-loops.md`: 재현 loop 선택과 품질 기준.
 - `references/root-cause-tracing.md`: bad value/state를 source까지 추적하는 절차.
-- `references/condition-based-waiting.md`: flaky async wait를 condition-based wait로 바꾸는 패턴.
+- `references/condition-based-waiting.md`: fake timer 우선 원칙과 condition-based wait 패턴.
 - `references/defense-in-depth.md`: root cause 확인 뒤 layered guard를 추가하는 기준.
 - `references/scripts/hitl-loop.template.sh`: manual reproduction이 불가피할 때 쓰는 template.
 - `references/scripts/find-polluter.template.sh`: unwanted state를 만드는 test/command를 격리하는 template.

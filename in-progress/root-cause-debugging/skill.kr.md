@@ -25,7 +25,7 @@ ROOT CAUSE 전에 FIX 없음.
 
 - `references/feedback-loops.md` — reproduction loop 선택과 개선.
 - `references/root-cause-tracing.md` — bad value, state, component boundary를 source까지 추적.
-- `references/condition-based-waiting.md` — flaky async test의 guessed sleep 제거.
+- `references/condition-based-waiting.md` — fake timer를 먼저 쓰고, real async work가 필요할 때 condition-based wait를 사용.
 - `references/defense-in-depth.md` — source를 확인한 뒤 layered guard 추가.
 - `references/scripts/hitl-loop.template.sh` — manual reproduction이 불가피할 때 절차화.
 - `references/scripts/find-polluter.template.sh` — unwanted state를 만드는 test/command 격리.
@@ -172,11 +172,11 @@ instrumentation은 Phase 4의 hypothesis 하나에 답해야 한다.
 상황별 probe:
 
 - **Performance regression**: baseline과 current measurement를 세우고 profiler output, query plan, allocation data, timing harness, regression bisection을 사용한다.
-- **Flaky waiting**: guessed sleep이 아니라 실제로 중요한 condition을 기다린다. arbitrary timeout은 timing 자체가 테스트 대상이고 이유가 문서화될 때만 사용한다.
+- **Flaky waiting**: timer-driven behavior면 fake timer/virtual clock을 먼저 사용한다. 그 외에는 guessed sleep이 아니라 실제로 중요한 condition을 기다린다. fixed sleep은 elapsed time 자체가 테스트 대상이고 이유가 문서화될 때만 사용한다.
 - **State pollution**: test, input, lifecycle step에 대한 bisection으로 polluter를 격리한다.
 - **External/manual step**: structured prompt loop로 사람을 안내하고 답변을 machine-readable output으로 캡처한다.
 
-flaky async wait에는 `references/condition-based-waiting.md`를 사용한다. state pollution에는 `references/scripts/find-polluter.template.sh`, manual reproduction에는 `references/scripts/hitl-loop.template.sh`를 사용한다.
+timer-driven test, flaky async wait, fake timer vs polling 결정에는 `references/condition-based-waiting.md`를 사용한다. state pollution에는 `references/scripts/find-polluter.template.sh`, manual reproduction에는 `references/scripts/hitl-loop.template.sh`를 사용한다.
 
 ## Phase 6 — Fix the Root Cause
 
