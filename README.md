@@ -6,7 +6,7 @@ Personal agent configuration and first-party AI-agent skills.
 
 ## Skills
 
-First-party skill sources live under [`in-progress/`](./in-progress/). Approved skills are published into [`skills/`](./skills/) by [`publish-skills.py`](./publish-skills.py); generated skill output should not be edited directly.
+First-party skill sources live under [`in-progress/`](./in-progress/). Approved skills are published into [`skills/`](./skills/) by [`publish_skills.py`](./publish_skills.py); generated skill output should not be edited directly.
 
 Current first-party skills:
 

@@ -23,16 +23,16 @@ if TYPE_CHECKING:
 MIN_SKILL_PATH_PARTS = 2
 GIT_CONFIG_OUTPUT_FIELDS = 2
 
-START_MARKER = "<!-- publish-skills:reference-commits:start -->"
-END_MARKER = "<!-- publish-skills:reference-commits:end -->"
+START_MARKER = "<!-- publish_skills:reference-commits:start -->"
+END_MARKER = "<!-- publish_skills:reference-commits:end -->"
 
 
 def log(message: str) -> None:
-    print(f"[publish-skills] {message}")
+    print(f"[publish_skills] {message}")
 
 
 def fail(message: str) -> NoReturn:
-    print(f"[publish-skills] {message}", file=sys.stderr)
+    print(f"[publish_skills] {message}", file=sys.stderr)
     raise SystemExit(1)
 
 

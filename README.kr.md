@@ -6,7 +6,7 @@
 
 ## 스킬
 
-1차 작성 스킬의 원본은 [`in-progress/`](./in-progress/) 아래에 있습니다. 승인된 스킬은 [`publish-skills.py`](./publish-skills.py)를 통해 [`skills/`](./skills/)로 게시됩니다. 생성된 스킬 출력물은 직접 수정하지 않습니다.
+1차 작성 스킬의 원본은 [`in-progress/`](./in-progress/) 아래에 있습니다. 승인된 스킬은 [`publish_skills.py`](./publish_skills.py)를 통해 [`skills/`](./skills/)로 게시됩니다. 생성된 스킬 출력물은 직접 수정하지 않습니다.
 
 현재 1차 작성 스킬:
 

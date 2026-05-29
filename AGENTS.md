@@ -6,7 +6,7 @@ This repository holds personal AI-agent configuration and custom skills. First-p
 
 ## Architecture & Data Flow
 
-- `publish-skills.py` is the main orchestration script. It discovers publishable skills under `in-progress/*/SKILL.md`, checks `.skill-lock.json`, removes unmanaged skill outputs from `skills/`, copies publishable skill directories into `skills/`, and updates each published `README.md` with referenced submodule commit metadata.
+- `publish_skills.py` is the main orchestration script. It discovers publishable skills under `in-progress/*/SKILL.md`, checks `.skill-lock.json`, removes unmanaged skill outputs from `skills/`, copies publishable skill directories into `skills/`, and updates each published `README.md` with referenced submodule commit metadata.
 - Publishing is intentionally file-based and deterministic: paths are `pathlib.Path`, skill lists are sorted, and slow I/O work is parallelized with `ThreadPoolExecutor`.
 - External material flows through `references/` only. If custom skill content copies or substantially derives from a reference repo, preserve the relevant MIT notice in `NOTICE.md` and document reference paths in the skill docs.
 - Runtime consumption is via `setup.sh`, which links this repository to `~/.agents`.
@@ -28,7 +28,7 @@ git submodule update --init --recursive
 ./setup.sh
 
 # Publish skills from in-progress/ into skills/; this removes unmanaged skill outputs
-uv run --script publish-skills.py
+uv run --script publish_skills.py
 
 # Python lint/format
 ruff check .
@@ -39,11 +39,11 @@ ruff format .
 uvx pyrefly lsp
 ```
 
-Before running `publish-skills.py`, check `.skill-lock.json`; the script refuses to overwrite lock-managed skill roots and deletes unmanaged existing directories in `skills/`.
+Before running `publish_skills.py`, check `.skill-lock.json`; the script refuses to overwrite lock-managed skill roots and deletes unmanaged existing directories in `skills/`.
 
 ## Code Conventions & Common Patterns
 
-- Python targets 3.14 (`ruff.toml`, `pyrefly.toml`); `publish-skills.py` uses a PEP 723 `uv` script header and stdlib-only dependencies.
+- Python targets 3.14 (`ruff.toml`, `pyrefly.toml`); `publish_skills.py` uses a PEP 723 `uv` script header and stdlib-only dependencies.
 - Formatting: Ruff, 88 columns, spaces, double quotes, preview formatting enabled. Ruff and Pyrefly exclude `skills/**` and `references/**`.
 - Type style: keep annotations explicit; Pyrefly checks unannotated definitions and promotes many type issues to errors.
 - Error handling: use small validation helpers and fail fast with clear stderr messages plus `SystemExit(1)`.
@@ -53,7 +53,7 @@ Before running `publish-skills.py`, check `.skill-lock.json`; the script refuses
 
 ## Important Files
 
-- `publish-skills.py`: Publish pipeline and reference-commit marker updater.
+- `publish_skills.py`: Publish pipeline and reference-commit marker updater.
 - `.skill-lock.json`: Lock file for protected skill roots.
 - `README.md`: Repository purpose, submodule setup, and reference/license policy.
 - `NOTICE.md`: Third-party MIT notice tracking for copied or derived material.
@@ -68,12 +68,12 @@ Before running `publish-skills.py`, check `.skill-lock.json`; the script refuses
 
 - Prefer `uv`/`uvx` for Python script and tool execution when commands are not already installed.
 - Required local tools for normal maintenance: `git`, `uv`, `ruff`, and Pyrefly tooling.
-- Keep `references/` initialized when updating skills that cite upstream material; `publish-skills.py` records referenced submodule HEAD commits in published README files.
+- Keep `references/` initialized when updating skills that cite upstream material; `publish_skills.py` records referenced submodule HEAD commits in published README files.
 - Do not run checks over `references/**` or generated `skills/**` unless intentionally working inside those external/generated trees.
 
 ## Testing & QA
 
 - No first-party automated test suite or test runner is defined at the repository root.
 - External tests under `references/**` belong to their upstream repositories and are reference material only.
-- For Python changes, run the narrowest relevant Ruff/Pyrefly checks and exercise the changed behavior directly. For `publish-skills.py`, prefer temporary directories via `REPO_ROOT`, `IN_PROGRESS_DIR`, `SKILLS_DIR`, and `LOCK_FILE` rather than mutating real skill outputs.
+- For Python changes, run the narrowest relevant Ruff/Pyrefly checks and exercise the changed behavior directly. For `publish_skills.py`, prefer temporary directories via `REPO_ROOT`, `IN_PROGRESS_DIR`, `SKILLS_DIR`, and `LOCK_FILE` rather than mutating real skill outputs.
 - Follow the repository's TDD guidance in `in-progress/test-driven-development/`: test observable behavior through public interfaces, cover edge/error cases, avoid private-method and call-order assertions, and do not add test-only production branches.

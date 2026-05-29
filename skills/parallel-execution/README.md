@@ -62,12 +62,12 @@ Review this skill again when these files change:
 - `references/obra/superpowers/skills/subagent-driven-development/code-quality-reviewer-prompt.md`
 - `references/obra/superpowers/skills/dispatching-parallel-agents/SKILL.md`
 
-<!-- publish-skills:reference-commits:start -->
+<!-- publish_skills:reference-commits:start -->
 ## Reference Commits
 
 Published against these submodule commits.
 
 - `references/obra/superpowers`: `f2cbfbefebbfef77321e4c9abc9e949826bea9d7`
-<!-- publish-skills:reference-commits:end -->
+<!-- publish_skills:reference-commits:end -->
 
 License notices for the original repositories are covered by the root `NOTICE.md`.
