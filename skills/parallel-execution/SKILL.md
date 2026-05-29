@@ -1,6 +1,6 @@
 ---
 name: parallel-execution
-description: "Use when work contains two or more independent tasks, failures, files, subsystems, reviews, or investigations that can proceed without shared mutable state or sequential dependency. Decompose work, dispatch focused subagents with self-contained prompts, integrate results, review conflicts, and run final verification centrally. 한국어: 작업에 서로 독립적인 task, failure, file, subsystem, review, investigation이 둘 이상 있고 공유 mutable state나 순차 의존 없이 진행할 수 있을 때 사용한다. 작업을 분해하고, self-contained prompt로 focused subagent를 dispatch하고, 결과를 통합하고, conflict를 검토하고, 최종 검증은 중앙에서 수행한다."
+description: "Use when work has two or more independent tasks, files, failures, subsystems, reviews, investigations, or implementation slices that can proceed without shared state or sequential dependency. 독립적인 작업, 파일, 실패, 서브시스템, 리뷰, 조사, 구현 slice가 둘 이상일 때."
 ---
 
 # Parallel Execution
