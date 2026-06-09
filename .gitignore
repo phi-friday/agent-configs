@@ -27,6 +27,3 @@ htmlcov/
 
 # secrets
 *.pem
-
-# skills
-.skill-lock.json
