@@ -275,7 +275,7 @@ Use when the user asks for a PRD/spec or when the work is large enough that impl
 
 Implementation decisions should describe modules, boundaries, interfaces, data flow, and architectural choices. Avoid brittle file-path-level promises unless the exact file is itself part of the decision.
 
-Testing decisions should focus on externally observable behavior, edge cases, and existing verification patterns.
+Testing decisions should focus on externally observable behavior, edge cases, and existing verification patterns. Prefer existing, high-level testing seams over new low-level seams.
 
 ## Capturing Decisions
 

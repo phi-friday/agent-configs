@@ -96,7 +96,7 @@ Elements taken:
 - Compress conversation and codebase understanding into a PRD-style document.
 - Separate problem, goals, user stories, implementation decisions, and testing decisions.
 - Write implementation decisions around modules, interfaces, boundaries, and data flow.
-- Write testing decisions around external behavior and verification scope, not implementation details.
+- Write testing decisions around external behavior, verification scope, and existing high-level testing seams, not implementation details.
 
 Adaptations:
 
