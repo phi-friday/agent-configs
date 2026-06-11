@@ -96,7 +96,7 @@ Elements taken:
 - Compress conversation and codebase understanding into a PRD-style document.
 - Separate problem, goals, user stories, implementation decisions, and testing decisions.
 - Write implementation decisions around modules, interfaces, boundaries, and data flow.
-- Write testing decisions around external behavior and verification scope, not implementation details.
+- Write testing decisions around external behavior, verification scope, and existing high-level testing seams, not implementation details.
 
 Adaptations:
 
@@ -165,9 +165,9 @@ Review this skill again when these files change:
 
 Published against these submodule commits.
 
-- `references/Fission-AI/OpenSpec`: `fd92ccca74cf3fe503faba59d1d862c7a9cd3581`
-- `references/mattpocock/skills`: `b8be62ffacb0118fa3eaa29a0923c87c8c11985c`
-- `references/obra/superpowers`: `f2cbfbefebbfef77321e4c9abc9e949826bea9d7`
+- `references/Fission-AI/OpenSpec`: `1b06fddd59d8e592d5b5794a1970b22867e85b1f`
+- `references/mattpocock/skills`: `694fa30311e02c2639942308513555e61ee84a6f`
+- `references/obra/superpowers`: `6fd4507659784c351abbd2bc264c7162cfd386dc`
 <!-- publish_skills:reference-commits:end -->
 
 ## License Note

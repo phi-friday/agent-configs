@@ -73,8 +73,8 @@ Review this skill again when these files change:
 
 Published against these submodule commits.
 
-- `references/mattpocock/skills`: `b8be62ffacb0118fa3eaa29a0923c87c8c11985c`
-- `references/obra/superpowers`: `f2cbfbefebbfef77321e4c9abc9e949826bea9d7`
+- `references/mattpocock/skills`: `694fa30311e02c2639942308513555e61ee84a6f`
+- `references/obra/superpowers`: `6fd4507659784c351abbd2bc264c7162cfd386dc`
 <!-- publish_skills:reference-commits:end -->
 
 License notices for the original repositories are covered by the root `NOTICE.md`.
