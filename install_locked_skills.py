@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 from collections.abc import Callable
@@ -133,8 +134,15 @@ def install_command(source: str, skills: list[LockedSkill]) -> list[str]:
 
 
 def run_command(args: list[str], cwd: Path) -> None:
+    if not args:
+        fail("missing command")
+
+    executable = shutil.which(args[0])
+    if executable is None:
+        fail("missing npx executable; install Node.js/npm before running setup")
+
     try:
-        subprocess.run(args, cwd=cwd, check=True)  # noqa: S603
+        subprocess.run([executable, *args[1:]], cwd=cwd, check=True)  # noqa: S603
     except FileNotFoundError:
         fail("missing npx executable; install Node.js/npm before running setup")
 
