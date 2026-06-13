@@ -9,7 +9,7 @@ This repository holds personal AI-agent configuration and custom skills. First-p
 - `publish_skills.py` is the main orchestration script. It discovers publishable skills under `in-progress/*/SKILL.md`, checks `.skill-lock.json`, removes unmanaged skill outputs from `skills/`, copies publishable skill directories into `skills/`, and updates each published `README.md` with referenced submodule commit metadata.
 - Publishing is intentionally file-based and deterministic: paths are `pathlib.Path`, skill lists are sorted, and slow I/O work is parallelized with `ThreadPoolExecutor`.
 - External material flows through `references/` only. If custom skill content copies or substantially derives from a reference repo, preserve the relevant MIT notice in `NOTICE.md` and document reference paths in the skill docs.
-- Runtime consumption is via `setup.sh`, which links this repository to `~/.agents`.
+- Runtime consumption is via `setup_agents.py`, which links this repository to `~/.agents` and installs lock-managed skills.
 
 ## Key Directories
 
@@ -25,7 +25,7 @@ This repository holds personal AI-agent configuration and custom skills. First-p
 git submodule update --init --recursive
 
 # Link this repo as the active agent config
-./setup.sh
+uv run --script setup_agents.py
 
 # Publish skills from in-progress/ into skills/; this removes unmanaged skill outputs
 uv run --script publish_skills.py
@@ -61,7 +61,7 @@ Before running `publish_skills.py`, check `.skill-lock.json`; the script refuses
 - `ruff.toml`: Lint and format policy.
 - `pyrefly.toml`: Static typechecking policy.
 - `.omp/lsp.yaml`: Pyrefly LSP launch configuration.
-- `setup.sh`: Creates `~/.agents` symlink to this repo.
+- `setup_agents.py`: Cross-platform setup entrypoint that links `~/.agents` to this repo and installs lock-managed skills.
 - `skills/.gitignore`: Lists ignored published skill output directories.
 
 ## Runtime/Tooling Preferences

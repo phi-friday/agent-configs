@@ -20,6 +20,16 @@ Each first-party skill keeps an English skill definition and README alongside Ko
 
 Some or all custom skills in this repository may be inspired by, adapted from, or derived from works in the external reference repositories listed below. Those upstream works are licensed under the MIT License, and their copyright and license notices must be preserved when their work is copied, modified, or substantially incorporated here.
 
+## Setup
+
+Link this repository to the agent runtime config path (`~/.agents`) and install lock-managed skills:
+
+```sh
+uv run --script setup_agents.py
+```
+
+On Unix-like systems, the script can also be run directly when executable. On Windows, run it through `uv`; it creates a directory junction when symlink privileges are unavailable.
+
 ## External references
 
 The repositories under [`references/`](./references/) are external Git submodules used as reference material while building custom skills for this repository. They are not authored by this repository unless explicitly stated otherwise.

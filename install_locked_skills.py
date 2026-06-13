@@ -27,7 +27,7 @@ class LockedSkill:
     skill_path: str
 
 
-type CommandRunner = Callable[[list[str]], int]
+type CommandRunner = Callable[[list[str]], None]
 
 
 def log(message: str) -> None:
@@ -132,12 +132,11 @@ def install_command(source: str, skills: list[LockedSkill]) -> list[str]:
     ]
 
 
-def run_command(args: list[str], cwd: Path) -> int:
+def run_command(args: list[str], cwd: Path) -> None:
     try:
-        completed = subprocess.run(args, cwd=cwd, check=False)  # noqa: S603
+        subprocess.run(args, cwd=cwd, check=True)  # noqa: S603
     except FileNotFoundError:
         fail("missing npx executable; install Node.js/npm before running setup")
-    return completed.returncode
 
 
 def install_missing_locked_skills(
@@ -148,10 +147,11 @@ def install_missing_locked_skills(
         log("all lock-managed skills are installed")
         return []
 
-    def command_runner(args: list[str]) -> int:
+    def command_runner(args: list[str]) -> None:
         if runner is not None:
-            return runner(args)
-        return run_command(args, cwd=repo_root)
+            runner(args)
+            return
+        run_command(args, cwd=repo_root)
 
     missing_by_source = groupby(
         sorted(missing, key=lambda skill: (skill.source, skill.name)),
@@ -161,9 +161,13 @@ def install_missing_locked_skills(
         source_skills = list(source_skills_iter)
         skill_names = ", ".join(skill.name for skill in source_skills)
         log(f"install missing lock-managed skill(s): {skill_names}")
-        returncode = command_runner(install_command(source, source_skills))
-        if returncode != 0:
-            fail(f"failed to install lock-managed skill(s): {skill_names}")
+        try:
+            command_runner(install_command(source, source_skills))
+        except subprocess.CalledProcessError as error:
+            fail(
+                "failed to install lock-managed skill(s) "
+                f"({error.returncode}): {skill_names}"
+            )
 
     return missing
 
