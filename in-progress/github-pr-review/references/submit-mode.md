@@ -52,10 +52,15 @@ git status --short --branch
 git branch --show-current
 git remote -v
 gh repo view --json nameWithOwner,url
-gh pr view <number> --json number,title,state,isDraft,author,baseRefName,headRefName,url,reviewDecision,mergeStateStatus
+gh pr view <number> --json number,title,state,isDraft,author,baseRefName,headRefName,headRefOid,url,reviewDecision,mergeStateStatus
 ```
 
-Use `gh pr diff <number>` only to validate selected inline anchors and file paths against the PR diff.
+Use these commands only to validate selected inline anchors and file paths against the PR diff:
+
+```sh
+gh api "repos/{owner}/{repo}/pulls/<number>/files" --paginate --jq '.[].filename'
+gh pr diff <number> --patch --color never
+```
 
 ## Target Validation
 
@@ -69,6 +74,8 @@ For each selected finding, extract `Submission target: inline | file | general` 
 - optional `start_line` and `start_side` together for ranges
 
 Confirm the path exists in the PR diff and the target line is on the requested side. Do not move anchors, choose nearby lines, or infer missing fields during Submit mode.
+
+Record the `headRefOid` used for validation and include it as `commit_id` in the payload. If the PR head changes before submission, stop, rebuild the payload, and repeat approval.
 
 `file` requires:
 
@@ -136,8 +143,10 @@ Rules:
 
 After the mandatory approval gate in `payload-approval.md`, submit exactly one GitHub PR review. This approval gate applies to normal Submit mode only; explicit YOLO mode follows `yolo-mode.md`.
 
+Immediately before the mutation, re-read `headRefOid`. If it differs from the approved payload's `commit_id`, do not submit; rebuild the payload and repeat the approval gate.
+
 ```sh
-gh api -X POST repos/<owner>/<repo>/pulls/<number>/reviews --input <payload-file>
+gh api -X POST "repos/{owner}/{repo}/pulls/<number>/reviews" --input <payload-file>
 ```
 
 Rules:
@@ -145,7 +154,7 @@ Rules:
 - Use `COMMENT` by default.
 - Use `REQUEST_CHANGES` only when the user explicitly requests it and approves that exact mode in the payload preview.
 - Do not approve the PR.
-- Do not use `gh pr review` for inline comments.
+- Do not use `gh pr review` for inline comments; it cannot submit the `comments[]` inline-review payload.
 - Do not use `gh pr comment` unless the user explicitly approves a separate fallback plan.
 - Never merge, close, reopen, label, assign, edit, commit, or push.
 

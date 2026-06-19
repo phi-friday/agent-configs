@@ -39,7 +39,7 @@ Resolve the PR from, in order:
 
 1. explicit PR number from the user
 2. explicit branch name from the user
-3. current branch with `gh pr list --head <current-branch>`
+3. current branch with `gh pr list --state open --head <current-branch> --json number,title,state,isDraft,author,baseRefName,headRefName,headRepositoryOwner,headRefOid,url --limit 10`
 4. ask only when multiple PRs match or no reliable target exists
 
 If no PR can be resolved, stop and report that clearly.
@@ -60,11 +60,52 @@ Before analyzing the diff, inspect:
 Preferred read-only commands:
 
 ```sh
-gh pr view <number> --json number,title,state,isDraft,author,baseRefName,headRefName,url,body,commits,files,additions,deletions,reviewDecision,mergeStateStatus,statusCheckRollup,comments,reviews,latestReviews
+gh pr view <number> --json number,title,state,isDraft,author,baseRefName,headRefName,headRefOid,url,body,commits,files,changedFiles,additions,deletions,reviewDecision,mergeStateStatus,statusCheckRollup,closingIssuesReferences,comments,reviews,latestReviews
 gh pr view <number> --comments
 gh issue view <issue-or-url> --comments
 gh pr view <pr-or-url> --comments
 ```
+
+Use GraphQL when `gh pr view --comments` does not expose enough inline review-thread detail:
+
+```sh
+gh api graphql \
+  -F owner='{owner}' \
+  -F repo='{repo}' \
+  -F number=<number> \
+  -f query='
+query($owner: String!, $repo: String!, $number: Int!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $number) {
+      reviewThreads(first: 100) {
+        totalCount
+        nodes {
+          isResolved
+          isOutdated
+          path
+          line
+          startLine
+          diffSide
+          startDiffSide
+          subjectType
+          comments(first: 100) {
+            totalCount
+            nodes {
+              author { login }
+              body
+              url
+              createdAt
+              outdated
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+```
+
+If `totalCount` exceeds the returned `nodes`, rerun with pagination before concluding a thread or reply is absent.
 
 If PR context links related issues or PRs, inspect those before reviewing the diff when they may contain requirements, prior decisions, reproduction steps, rollout constraints, or unresolved blockers.
 
@@ -72,12 +113,16 @@ Treat existing comments as review input. Do not duplicate an existing concern un
 
 ### 3. Diff And Validation Inputs
 
-Collect:
+Collect parseable diff, changed-file metadata, and check state:
 
 ```sh
-gh pr diff <number>
-gh pr checks <number>
+gh pr diff <number> --name-only
+gh pr diff <number> --patch --color never
+gh api "repos/{owner}/{repo}/pulls/<number>/files" --paginate --jq '.[] | {path:.filename,status,additions,deletions,changes,patch}'
+gh pr checks <number> --json name,state,bucket,link,workflow,description
 ```
+
+`gh pr checks` can exit non-zero when no checks exist or checks are pending; treat that as check status to report, not as command invalidity.
 
 Optional local inspection after context is verified:
 

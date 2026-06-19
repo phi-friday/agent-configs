@@ -16,6 +16,7 @@ Use this structure:
 ## 리뷰 제출 전 검수
 
 - PR: #<number> <url>
+- Head commit: <headRefOid used as `commit_id`>
 - 제출 예정 항목: <PRF-001, PRF-003>
 - 인라인 항목: <PRF-001 or 없음>
 - 상위 본문 항목: <PRF-003 or 없음>
@@ -46,6 +47,7 @@ Use this structure:
 {
   "event": "COMMENT",
   "body": "<exact top-level review body above>",
+  "commit_id": "<headRefOid>",
   "comments": [
     {
       "path": "path/to/file.ts",
@@ -59,6 +61,8 @@ Use this structure:
 ````
 
 If there are no inline comments, omit `comments` from the payload.
+
+If the PR head SHA changes after preview approval, do not submit the old payload; rebuild the payload and ask again.
 
 If the submission language is not Korean, include a Korean inspection section before the actual GitHub content. If the submission language is Korean, do not duplicate the same content in a separate Korean inspection copy.
 
@@ -92,12 +96,15 @@ If the user requests changes, revise the payload, show the full exact preview ag
 
 ## Payload Shape
 
+Use `line`/`side` anchors, plus `start_line`/`start_side` for ranges. Do not use diff `position` when a line/side anchor is available.
+
 With inline comments:
 
 ```json
 {
   "event": "COMMENT",
   "body": "인라인 리뷰 코멘트를 남겼습니다.",
+  "commit_id": "<headRefOid>",
   "comments": [
     {
       "path": "path/to/file.ts",
@@ -114,7 +121,8 @@ With only file/general findings:
 ```json
 {
   "event": "COMMENT",
-  "body": "<selected file/general findings>"
+  "body": "<selected file/general findings>",
+  "commit_id": "<headRefOid>"
 }
 ```
 
