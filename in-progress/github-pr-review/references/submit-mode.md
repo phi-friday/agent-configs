@@ -1,6 +1,6 @@
 # Submit Mode
 
-Submit mode publishes selected findings from an existing draft. It must never be used as an independent review command.
+Normal Submit mode publishes selected findings from an existing draft. It must never be used as an independent review command. YOLO mode is defined separately in `yolo-mode.md`.
 
 ## Prerequisite
 
@@ -134,7 +134,7 @@ Rules:
 
 ## Mutation Scope
 
-After the mandatory approval gate in `payload-approval.md`, submit exactly one GitHub PR review:
+After the mandatory approval gate in `payload-approval.md`, submit exactly one GitHub PR review. This approval gate applies to normal Submit mode only; explicit YOLO mode follows `yolo-mode.md`.
 
 ```sh
 gh api -X POST repos/<owner>/<repo>/pulls/<number>/reviews --input <payload-file>

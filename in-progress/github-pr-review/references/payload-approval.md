@@ -1,6 +1,8 @@
 # Payload Approval
 
-Submit mode requires exact content approval through the `ask` tool before any GitHub-mutating command runs.
+Normal Submit mode requires exact content approval through the `ask` tool before any GitHub-mutating command runs.
+
+This approval gate does not apply to first-word YOLO mode. YOLO mode is enabled only when the user's input starts with exact `yolo` and follows `yolo-mode.md`.
 
 Selecting IDs is not approval to submit. Submit wording in the user's request is not approval. Ordinary chat text is not approval.
 

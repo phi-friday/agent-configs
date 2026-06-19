@@ -5,16 +5,17 @@ description: "PR 리뷰 초안 작성, PRF-* 항목 제출, GitHub review payloa
 
 # GitHub PR Review
 
-GitHub pull request를 두 explicit mode로 review한다. 먼저 draft하고, exact payload approval 뒤 선택된 draft finding만 제출한다.
+GitHub pull request를 explicit mode로 review한다. Draft, selected draft finding submit, 또는 user가 명시적으로 opt-in한 YOLO draft-and-submit을 수행한다.
 
 ## Non-Negotiables
 
 ```text
-REVIEW 작업 전 DRAFT VS SUBMIT MODE를 먼저 결정.
+REVIEW 작업 전 DRAFT VS SUBMIT VS YOLO MODE를 먼저 결정.
 DRAFT MODE 중 GITHUB MUTATION 없음.
-기존 PRF-* DRAFT 없이 SUBMISSION 없음.
-정확한 PAYLOAD PREVIEW와 ASK APPROVAL 없이 SUBMISSION 없음.
-SUBMIT MODE 중 새 FINDING 없음.
+YOLO MODE의 SAME-RUN DRAFT 외에는 기존 PRF-* DRAFT 없이 SUBMISSION 없음.
+explicit YOLO mode 밖에서는 user approval bypass 금지.
+user input의 첫 단어가 정확히 `yolo`일 때만 YOLO MODE.
+NORMAL SUBMIT MODE 중 새 FINDING 없음.
 항상 한국어로 답변.
 ```
 
@@ -22,10 +23,12 @@ SUBMIT MODE 중 새 FINDING 없음.
 
 현재 mode에 필요한 reference만 연다.
 
-- `references/mode-selection.md` — user intent를 Draft, Submit, ambiguous로 분류.
+- `references/mode-selection.md` — user intent를 Draft, Submit, YOLO, ambiguous로 분류.
 - `references/draft-mode.md` — read-only PR review workflow와 draft output contract.
 - `references/submit-mode.md` — selected finding submission workflow와 GitHub mutation guardrail.
-- `references/payload-approval.md` — exact preview와 mandatory `ask` approval gate.
+- `references/yolo-mode.md` — user inspection 없는 same-run draft and submit workflow.
+- `scripts/detect_yolo_mode.py` — YOLO mode mandatory script classifier.
+- `references/payload-approval.md` — normal Submit mode의 exact preview와 mandatory `ask` approval gate.
 
 ## Use When
 
@@ -35,6 +38,7 @@ SUBMIT MODE 중 새 FINDING 없음.
 - PR number, branch name, current branch에서 PR resolve
 - 추후 제출할 수 있는 stable review finding ID 생성
 - existing draft의 selected `PRF-*` finding 제출
+- explicit `yolo` draft-and-submit을 한 번에 수행
 - future reviewer를 위한 excluded review context 보존
 
 GitHub PR context가 없는 generic code review workflow에는 사용하지 않는다.
@@ -50,13 +54,32 @@ review / analyze / check PR / PR number or branch only
 submit / post / upload / 올려 / 제출 / publish PRF-* findings
     └─ Submit mode
 
+user input의 첫 단어가 정확히 `yolo`
+    └─ YOLO mode: payload approval 없이 draft와 submit을 한 번에 수행
+
 사용자가 review analysis를 원하는지 GitHub publication을 원하는지 불명확함
     └─ Ambiguous: ask tool로 묻고, 선택된 mode를 이어서 수행
 ```
 
-Exact classifier는 `references/mode-selection.md`를 사용한다.
+Exact classifier는 `references/mode-selection.md`를 사용한다. YOLO mode는 LLM 판단만으로 결정하지 말고 `scripts/detect_yolo_mode.py`로 확인해야 한다.
 
 Mode가 ambiguous하면 일반 prose로 묻고 종료하지 않는다. `ask` tool로 mode choice를 받고, answer 뒤 선택된 workflow를 계속 수행한다.
+
+## YOLO Mode Summary
+
+YOLO mode는 Draft mode를 실행한 뒤 resulting finding을 같은 run에서 submit한다.
+
+Hard boundaries:
+
+- user의 latest input에서 첫 단어가 정확히 `yolo`일 때만 사용한다.
+- uppercase `YOLO`, `yolox` 같은 suffix, `XXX yolo` 같은 later word, “auto”, “바로 제출”, “검수 없이” 같은 synonym에서 YOLO mode를 infer하지 않는다.
+- payload approval을 위해 `ask` tool을 호출하지 않는다.
+- submit 전 PR context, anchor, file path, payload shape, GitHub mutation scope는 여전히 validate한다.
+- selected finding을 faithful하게 submit할 수 없으면 mutation 전에 멈추고 blocker를 보고한다.
+
+YOLO mode는 같은 YOLO request에서 ID/category include/exclude가 명시되지 않는 한 모든 actionable draft finding을 submit한다.
+
+Full workflow는 `references/yolo-mode.md`를 사용한다.
 
 ## Global Language Rule
 
@@ -136,4 +159,4 @@ Submit mode는 다음을 해야 한다.
 9. 관찰된 submission result 보고
 
 Selection, validation, excluded-context, result rule은 `references/submit-mode.md`를 사용한다.
-Approval preview와 `ask` gate는 `references/payload-approval.md`를 사용한다.
+Normal Submit mode의 approval preview와 `ask` gate는 `references/payload-approval.md`를 사용한다.

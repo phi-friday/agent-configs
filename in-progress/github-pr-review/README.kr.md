@@ -2,9 +2,9 @@
 
 [English](README.md) | [한국어](README.kr.md)
 
-`github-pr-review`는 GitHub PR review draft와 통제된 review submission을 위한 in-progress skill이다.
+`github-pr-review`는 GitHub PR review draft, 통제된 review submission, explicit YOLO draft-and-submit을 위한 in-progress skill이다.
 
-Review draft와 GitHub publication을 별도 mode로 다룬다. 먼저 user input에서 mode를 resolve하고, ambiguous request는 `ask` tool로 확인한 뒤 선택된 mode를 계속 수행한다.
+Review draft, normal GitHub publication, YOLO publication을 별도 mode로 다룬다. 먼저 user input에서 mode를 resolve하고, ambiguous request는 `ask` tool로 확인한 뒤 선택된 mode를 계속 수행한다.
 
 ## 파일 구성
 
@@ -14,11 +14,14 @@ github-pr-review/
 ├─ SKILL.kr.md
 ├─ README.md
 ├─ README.kr.md
-└─ references/
-   ├─ mode-selection.md
-   ├─ draft-mode.md
-   ├─ submit-mode.md
-   └─ payload-approval.md
+├─ references/
+│  ├─ mode-selection.md
+│  ├─ draft-mode.md
+│  ├─ submit-mode.md
+│  ├─ yolo-mode.md
+│  └─ payload-approval.md
+└─ scripts/
+   └─ detect_yolo_mode.py
 ```
 
 ## 파일 역할
@@ -27,10 +30,12 @@ github-pr-review/
 - `SKILL.kr.md`: `SKILL.md`의 한국어판.
 - `README.md`: 영어 README.
 - `README.kr.md`: 한국어 README.
-- `references/mode-selection.md`: user input을 Draft, Submit, ambiguous로 분류하는 규칙.
+- `references/mode-selection.md`: user input을 Draft, Submit, YOLO, ambiguous로 분류하는 규칙.
 - `references/draft-mode.md`: read-only PR review workflow와 draft output format.
 - `references/submit-mode.md`: selected `PRF-*` submission workflow와 mutation scope.
-- `references/payload-approval.md`: exact preview format과 mandatory `ask` approval gate.
+- `references/yolo-mode.md`: user input의 첫 단어가 정확히 `yolo`일 때만 enable되는 same-run draft and submit workflow.
+- `references/payload-approval.md`: normal Submit mode의 exact preview format과 mandatory `ask` approval gate.
+- `scripts/detect_yolo_mode.py`: raw user input이 YOLO mode를 enable하는지 판정하는 runtime classifier.
 
 ## Scope
 
@@ -40,6 +45,7 @@ github-pr-review/
 - stable `PRF-*` review finding ID를 만들 때
 - draft finding을 later submission으로 handoff할 때
 - existing draft에서 selected finding을 제출할 때
+- user inspection gate 없이 첫 단어 `yolo` draft-and-submit을 실행할 때
 - 의도적으로 제외된 review context를 보존할 때
 
 GitHub PR target이 없는 generic code review skill로 사용하지 않는다.
@@ -54,11 +60,13 @@ resolve mode
     │
     ├─ Draft mode ──▶ context 읽기 → diff review → PRF-* finding을 chat에만 보고
     │
-    └─ Submit mode ─▶ PRF-* 선택 → anchor validate → exact payload preview → ask approval → submit
+    ├─ Submit mode ─▶ PRF-* 선택 → anchor validate → exact payload preview → ask approval → submit
+    │
+    └─ YOLO mode ───▶ draft → selected finding validate → ask approval 없이 submit
 ```
 
 핵심 규칙:
 
 ```text
-mode resolve → 안전하게 draft 또는 existing draft에서 submit → exact ask approval 없이 GitHub mutate 금지
+mode resolve → 안전하게 draft, existing draft에서 submit, 또는 first-word yolo → input이 정확한 `yolo`로 시작하지 않으면 approval bypass 금지
 ```

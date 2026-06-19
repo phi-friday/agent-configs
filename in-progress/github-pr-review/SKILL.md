@@ -5,16 +5,17 @@ description: "Use when drafting a GitHub pull request review, or when submitting
 
 # GitHub PR Review
 
-Review GitHub pull requests in two explicit modes: draft first, submit only selected draft findings after exact payload approval.
+Review GitHub pull requests in explicit modes: draft, submit selected draft findings, or YOLO draft-and-submit when the user explicitly opts in.
 
 ## Non-Negotiables
 
 ```text
-RESOLVE DRAFT VS SUBMIT MODE BEFORE REVIEW WORK.
+RESOLVE DRAFT VS SUBMIT VS YOLO MODE BEFORE REVIEW WORK.
 NO GITHUB MUTATION DURING DRAFT MODE.
-NO SUBMISSION WITHOUT AN EXISTING PRF-* DRAFT.
-NO SUBMISSION WITHOUT EXACT PAYLOAD PREVIEW AND ASK APPROVAL.
-NO NEW FINDINGS DURING SUBMIT MODE.
+NO SUBMISSION WITHOUT AN EXISTING PRF-* DRAFT, EXCEPT YOLO MODE'S SAME-RUN DRAFT.
+NO USER-APPROVAL BYPASS OUTSIDE EXPLICIT YOLO MODE.
+YOLO MODE ONLY WHEN USER INPUT'S FIRST WORD IS EXACTLY `yolo`.
+NO NEW FINDINGS DURING NORMAL SUBMIT MODE.
 ALWAYS ANSWER THE USER IN KOREAN.
 ```
 
@@ -22,10 +23,12 @@ ALWAYS ANSWER THE USER IN KOREAN.
 
 Open only the reference needed for the current mode:
 
-- `references/mode-selection.md` — classify user intent as Draft, Submit, or ambiguous.
+- `references/mode-selection.md` — classify user intent as Draft, Submit, YOLO, or ambiguous.
 - `references/draft-mode.md` — read-only PR review workflow and draft output contract.
 - `references/submit-mode.md` — selected finding submission workflow and GitHub mutation guardrails.
-- `references/payload-approval.md` — exact preview and mandatory `ask` approval gate.
+- `references/yolo-mode.md` — same-run draft and submit workflow without user inspection.
+- `scripts/detect_yolo_mode.py` — mandatory script classifier for YOLO mode.
+- `references/payload-approval.md` — exact preview and mandatory `ask` approval gate for normal Submit mode.
 
 ## Use When
 
@@ -35,6 +38,7 @@ Use this skill for:
 - resolving a PR from a number, branch name, or current branch
 - producing stable review finding IDs for later submission
 - submitting selected `PRF-*` findings from an existing draft
+- running explicit `yolo` draft-and-submit in one pass
 - preserving excluded review context for future reviewers
 
 Do not use this as a generic code review workflow when there is no GitHub PR context.
@@ -50,13 +54,32 @@ review / analyze / check PR / PR number or branch only
 submit / post / upload / 올려 / 제출 / publish PRF-* findings
     └─ Submit mode
 
+user input's first word is exactly `yolo`
+    └─ YOLO mode: draft and submit in one run without payload approval
+
 unclear whether the user wants review analysis or GitHub publication
     └─ Ambiguous: ask with the ask tool, then continue in the selected mode
 ```
 
-Use `references/mode-selection.md` for the exact classifier.
+Use `references/mode-selection.md` for the exact classifier. YOLO mode must be confirmed by `scripts/detect_yolo_mode.py`, not by LLM judgment alone.
 
 If mode is ambiguous, do not ask in ordinary prose and stop. Use the `ask` tool with mode choices, then continue the chosen workflow after the answer.
+
+## YOLO Mode Summary
+
+YOLO mode runs Draft mode and then submits the resulting findings in one run.
+
+Hard boundaries:
+
+- only use when the user's latest input has `yolo` as its exact first word
+- do not infer YOLO mode from uppercase `YOLO`, suffixes like `yolox`, later words like `XXX yolo`, or synonyms such as “auto”, “바로 제출”, or “검수 없이”
+- do not call the `ask` tool for payload approval
+- still validate PR context, anchors, file paths, payload shape, and GitHub mutation scope before submitting
+- if any selected finding cannot be faithfully submitted, stop before mutation and report the blocker
+
+YOLO mode submits every actionable draft finding by default unless the same YOLO request explicitly includes or excludes IDs/categories.
+
+Use `references/yolo-mode.md` for the full workflow.
 
 ## Global Language Rule
 
@@ -136,4 +159,4 @@ Submit mode must:
 9. report the observed submission result
 
 Use `references/submit-mode.md` for selection, validation, excluded-context, and result rules.
-Use `references/payload-approval.md` for the approval preview and `ask` gate.
+Use `references/payload-approval.md` for the approval preview and `ask` gate in normal Submit mode.
