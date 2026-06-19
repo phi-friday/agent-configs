@@ -65,7 +65,7 @@ Ask one mode-selection question with at least these options:
 
 1. `Draft review only` — Analyze the PR and report findings in chat without writing to GitHub.
 2. `Submit existing draft findings` — Publish selected `PRF-*` findings from an existing draft after exact payload approval.
-3. `YOLO draft and submit` — Valid only if `detect_mode.py` returns `"mode": "yolo"` for the original user input; otherwise explain that YOLO requires first-word `yolo` or `yolo,` and do not select it.
+3. `YOLO draft and submit/approve` — Valid only if `detect_mode.py` returns `"mode": "yolo"` for the original user input; otherwise explain that YOLO requires first-word `yolo` or `yolo,` and do not select it.
 
 Recommended default: `Draft review only`.
 

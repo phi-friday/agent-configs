@@ -5,7 +5,7 @@ description: "Use when drafting a GitHub pull request review, or when submitting
 
 # GitHub PR Review
 
-Review GitHub pull requests in explicit modes: draft, submit selected draft findings, or YOLO draft-and-submit when the user explicitly opts in.
+Review GitHub pull requests in explicit modes: draft, submit selected draft findings, or YOLO draft-and-submit/approve when the user explicitly opts in.
 
 ## Non-Negotiables
 
@@ -16,6 +16,7 @@ NO SUBMISSION WITHOUT AN EXISTING PRF-* DRAFT, EXCEPT YOLO MODE'S SAME-RUN DRAFT
 NO USER-APPROVAL BYPASS OUTSIDE EXPLICIT YOLO MODE.
 YOLO MODE ONLY WHEN `scripts/detect_mode.py` RETURNS MODE `yolo`.
 NO NEW FINDINGS DURING NORMAL SUBMIT MODE.
+YOLO MODE WITH ZERO ACTIONABLE FINDINGS MUST APPROVE THE PR.
 ALWAYS ANSWER THE USER IN KOREAN.
 ```
 
@@ -26,7 +27,7 @@ Open only the reference needed for the current mode:
 - `references/mode-selection.md` — classify user intent as Draft, Submit, YOLO, or ambiguous.
 - `references/draft-mode.md` — read-only PR review workflow and draft output contract.
 - `references/submit-mode.md` — selected finding submission workflow and GitHub mutation guardrails.
-- `references/yolo-mode.md` — same-run draft and submit workflow without user inspection.
+- `references/yolo-mode.md` — same-run draft and submit/approve workflow without user inspection.
 - `scripts/detect_mode.py` — explicit `draft`/`submit`/`yolo` mode keyword classifier.
 - `references/payload-approval.md` — exact preview and mandatory `ask` approval gate for normal Submit mode.
 
@@ -38,7 +39,7 @@ Use this skill for:
 - resolving a PR from a number, branch name, or current branch
 - producing stable review finding IDs for later submission
 - submitting selected `PRF-*` findings from an existing draft
-- running explicit `yolo` draft-and-submit in one pass
+- running explicit `yolo` draft-and-submit/approve in one pass
 - preserving excluded review context for future reviewers
 
 Do not use this as a generic code review workflow when there is no GitHub PR context.
@@ -55,7 +56,7 @@ first word is exact `submit` or `submit,`
     └─ Submit mode
 
 first word is exact `yolo` or `yolo,`
-    └─ YOLO mode: draft and submit in one run without payload approval
+    └─ YOLO mode: draft and submit/approve in one run without payload approval
 
 unclear whether the user wants review analysis or GitHub publication
     └─ Ambiguous: ask with the ask tool, then continue in the selected mode
@@ -67,7 +68,7 @@ If mode is ambiguous, do not ask in ordinary prose and stop. Use the `ask` tool 
 
 ## YOLO Mode Summary
 
-YOLO mode runs Draft mode and then submits the resulting findings in one run.
+YOLO mode runs Draft mode, then either submits the resulting findings or approves the PR when the draft found no actionable findings.
 
 Hard boundaries:
 
@@ -76,8 +77,9 @@ Hard boundaries:
 - do not call the `ask` tool for payload approval
 - still validate PR context, anchors, file paths, payload shape, and GitHub mutation scope before submitting
 - if any selected finding cannot be faithfully submitted, stop before mutation and report the blocker
+- if the same-run draft finds no actionable findings, submit exactly one `APPROVE` review without asking for approval
 
-YOLO mode submits every actionable draft finding by default unless the same YOLO request explicitly includes or excludes IDs/categories.
+YOLO mode submits every actionable draft finding by default unless the same YOLO request explicitly includes or excludes IDs/categories. If there are zero actionable draft findings, YOLO mode approves the PR instead of submitting comments or doing nothing.
 
 Use `references/yolo-mode.md` for the full workflow.
 

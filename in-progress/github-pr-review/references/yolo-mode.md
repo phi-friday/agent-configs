@@ -1,6 +1,6 @@
 # YOLO Mode
 
-YOLO mode drafts a PR review and submits the resulting findings in one run.
+YOLO mode drafts a PR review, then submits actionable findings or approves the PR when the draft is clean.
 
 Use it only when the mandatory classifier script confirms the user's latest raw input has explicit mode `yolo`.
 
@@ -49,7 +49,7 @@ Still stop before mutation when required information is missing or unsafe:
 
 YOLO mode bypasses only the payload approval gate. It does not bypass PR resolution, existing-context review, anchor validation, payload construction, or GitHub mutation limits.
 
-Never approve, merge, close, reopen, label, assign, edit, commit, or push.
+Approve only when the same-run Draft mode finds no actionable findings. Otherwise never approve, merge, close, reopen, label, assign, edit, commit, or push.
 
 ## Workflow
 
@@ -59,9 +59,9 @@ Run Draft mode first.
 2. Read existing PR context before the diff.
 3. Inspect the diff and validation evidence.
 4. Produce actionable findings with stable `PRF-*` IDs and submission targets.
-5. If there are no actionable findings, do not submit a GitHub review; report that no submission was made.
+5. If there are no actionable findings, validate that the current `headRefOid` still matches the reviewed commit, then submit exactly one GitHub PR review with event `APPROVE`, no inline comments, and a concise Korean body saying no actionable findings were found.
 
-Then submit from the just-created draft.
+If actionable findings exist, submit from the just-created draft.
 
 1. Submit every actionable draft finding by default.
 2. Apply explicit include/exclude instructions only if they appear in the same YOLO request.
@@ -88,7 +88,9 @@ If the requested subset is ambiguous after the draft is produced, stop before mu
 
 ## Event Mode
 
-Use `COMMENT` by default.
+Use `APPROVE` only when the same-run Draft mode found no actionable findings.
+
+When actionable findings exist, use `COMMENT` by default.
 
 Use `REQUEST_CHANGES` only when the same YOLO request explicitly asks for request-changes mode, for example:
 
@@ -96,7 +98,7 @@ Use `REQUEST_CHANGES` only when the same YOLO request explicitly asks for reques
 yolo request changes로 제출해
 ```
 
-Never approve the PR in YOLO mode.
+Never approve a PR while submitting actionable findings.
 
 ## Preview Handling
 
@@ -104,11 +106,12 @@ Do not show a pre-submission inspection preview and wait for user approval.
 
 After submission, include enough detail for audit:
 
-- submitted `PRF-*` IDs
+- submitted `PRF-*` IDs, or `없음` when approving with no findings
 - inline locations
 - top-level body IDs
 - excluded IDs, if any
 - GitHub Review API event
+- whether the PR was approved because no actionable findings were found
 - whether any finding was not submitted and why
 
 ## Result Format
@@ -123,8 +126,8 @@ Answer in Korean.
 - 제출한 상위 본문 항목: <PRF-003 or 없음>
 - 인라인 위치: <PRF-001 path/to/file.ts:42 RIGHT or 없음>
 - 제외한 항목: <PRF-002 or 없음>
-- 제출 방식: <review comments | request changes>
-- GitHub Review API event: <COMMENT | REQUEST_CHANGES>
+- 제출 방식: <review comments | request changes | approval>
+- GitHub Review API event: <COMMENT | REQUEST_CHANGES | APPROVE>
 
 ## Draft 요약
 

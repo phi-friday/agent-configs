@@ -2,7 +2,7 @@
 
 [English](README.md) | [한국어](README.kr.md)
 
-`github-pr-review` is an in-progress skill for GitHub PR review drafting, controlled review submission, and explicit YOLO draft-and-submit.
+`github-pr-review` is an in-progress skill for GitHub PR review drafting, controlled review submission, and explicit YOLO draft-and-submit/approve.
 
 It treats review drafting, normal GitHub publication, and YOLO publication as separate modes. The mode is resolved from the user's input first; ambiguous requests are clarified with the `ask` tool and then continued in the selected mode.
 
@@ -33,7 +33,7 @@ github-pr-review/
 - `references/mode-selection.md`: Rules for classifying user input as Draft, Submit, YOLO, or ambiguous.
 - `references/draft-mode.md`: Read-only PR review workflow and draft output format.
 - `references/submit-mode.md`: Selected `PRF-*` submission workflow and mutation scope.
-- `references/yolo-mode.md`: Same-run draft and submit workflow, enabled only when the classifier returns explicit mode `yolo`.
+- `references/yolo-mode.md`: Same-run draft and submit/approve workflow, enabled only when the classifier returns explicit mode `yolo`.
 - `references/payload-approval.md`: Exact preview format and mandatory `ask` approval gate for normal Submit mode.
 - `scripts/detect_mode.py`: Runtime classifier for explicit `draft`, `submit`, and `yolo` mode keywords.
 
@@ -45,7 +45,7 @@ Use this skill when:
 - creating stable `PRF-*` review finding IDs
 - preparing a handoff from draft findings to later submission
 - submitting selected findings from an existing draft
-- running explicit `yolo`/`yolo,` draft-and-submit without a user inspection gate
+- running explicit `yolo`/`yolo,` draft-and-submit/approve without a user inspection gate
 - preserving intentionally excluded review context
 
 Do not use it as a generic code review skill without a GitHub PR target.
@@ -62,7 +62,7 @@ resolve mode
     │
     ├─ Submit mode ─▶ select PRF-* → validate anchors → preview exact payload → ask approval → submit
     │
-    └─ YOLO mode ───▶ draft → validate all selected findings → submit without ask approval
+    └─ YOLO mode ───▶ draft → submit selected findings without ask, or approve when clean
 ```
 
 Core rule:
