@@ -49,7 +49,7 @@ Still stop before mutation when required information is missing or unsafe:
 
 YOLO mode bypasses only the payload approval gate. It does not bypass PR resolution, existing-context review, anchor validation, payload construction, or GitHub mutation limits.
 
-Approve only when the same-run Draft mode finds no actionable findings. Otherwise never approve, merge, close, reopen, label, assign, edit, commit, or push.
+Approve only when Event Mode permits `APPROVE`. Otherwise never approve while submitting actionable findings, and never merge, close, reopen, label, assign, edit, commit, or push.
 
 ## Workflow
 
@@ -59,14 +59,17 @@ Run Draft mode first.
 2. Read existing PR context before the diff.
 3. Inspect the diff and validation evidence.
 4. Produce actionable findings with stable `PRF-*` IDs and submission targets.
-5. If there are no actionable findings, validate that the current `headRefOid` still matches the reviewed commit, then submit exactly one GitHub PR review with event `APPROVE`, no inline comments, and a concise Korean body saying no actionable findings were found.
+5. Choose the GitHub Review API event with Event Mode below.
+6. If Event Mode chooses `APPROVE`, validate that the current `headRefOid` still matches the reviewed commit, then submit exactly one GitHub PR review with event `APPROVE`, no inline comments, and a concise Korean body saying no actionable findings were found.
 
-If actionable findings exist, submit from the just-created draft.
+If Event Mode chooses `COMMENT` or `REQUEST_CHANGES`, submit from the just-created draft.
+
+When `COMMENT` is chosen with no actionable findings because validation is pending or unclear, submit a top-level body only. Do not invent `PRF-*` IDs; state the validation uncertainty plainly.
 
 1. Submit every actionable draft finding by default.
 2. Apply explicit include/exclude instructions only if they appear in the same YOLO request.
 3. Validate every selected target using Submit mode target validation.
-4. Compose the exact inline comments, top-level body, and API payload.
+4. Compose the exact inline comments, top-level body, API payload, and selected event.
 5. Submit exactly one GitHub PR review with `gh api`.
 6. Report the observed submission result in Korean.
 
@@ -88,15 +91,33 @@ If the requested subset is ambiguous after the draft is produced, stop before mu
 
 ## Event Mode
 
-Use `APPROVE` only when the same-run Draft mode found no actionable findings.
+In YOLO mode, the agent owns the GitHub review event.
 
-When actionable findings exist, use `COMMENT` by default.
+Decision order:
 
-Use `REQUEST_CHANGES` only when the same YOLO request explicitly asks for request-changes mode, for example:
+1. Stop before mutation when PR resolution, repository context, target validation, payload construction, or head-commit validation is unsafe.
+2. Use `APPROVE` only when the same-run Draft mode found no actionable findings and validation shows no failing or pending merge-blocking checks.
+3. Use `REQUEST_CHANGES` when at least one selected finding is a high-confidence blocking `Must Fix`.
+4. Use `COMMENT` for non-blocking findings, uncertain evidence, pending or unclear validation, or explicit comment-only behavior.
 
-```text
-yolo request changes로 제출해
-```
+Blocking `Must Fix` means a finding that should prevent merge until fixed:
+
+- correctness regression
+- security issue
+- data loss, migration corruption, or irreversible state risk
+- backward compatibility break
+- race condition or concurrency bug
+- PR-caused required check failure
+- production or user-visible severe regression
+- missing required test only when the missing coverage leaves a concrete regression risk
+
+Do not use `REQUEST_CHANGES` for style-only feedback, refactor preference, low-confidence risk, nice-to-have tests/docs, or subjective maintainability comments.
+
+Explicit event wording in the same YOLO request can only narrow this policy:
+
+- `yolo request changes로 제출해` may use `REQUEST_CHANGES` only when a blocking `Must Fix` exists; do not manufacture blocking severity.
+- `yolo comment only`, `코멘트만`, or equivalent approval/request-changes bans force `COMMENT` when there is content to submit.
+- If approval is explicitly forbidden and the draft is clean, do not approve; report that no GitHub review was submitted unless the same request explicitly asks for a top-level no-findings comment.
 
 Never approve a PR while submitting actionable findings.
 
@@ -104,13 +125,14 @@ Never approve a PR while submitting actionable findings.
 
 Do not show a pre-submission inspection preview and wait for user approval.
 
-After submission, include enough detail for audit:
+After submission or a no-submission decision, include enough detail for audit:
 
 - submitted `PRF-*` IDs, or `없음` when approving with no findings
 - inline locations
 - top-level body IDs
 - excluded IDs, if any
-- GitHub Review API event
+- GitHub Review API event, or `none` when no review was submitted
+- review event decision
 - whether the PR was approved because no actionable findings were found
 - whether any finding was not submitted and why
 
@@ -126,8 +148,9 @@ Answer in Korean.
 - 제출한 상위 본문 항목: <PRF-003 or 없음>
 - 인라인 위치: <PRF-001 path/to/file.ts:42 RIGHT or 없음>
 - 제외한 항목: <PRF-002 or 없음>
-- 제출 방식: <review comments | request changes | approval>
-- GitHub Review API event: <COMMENT | REQUEST_CHANGES | APPROVE>
+- 제출 방식: <review comments | request changes | approval | no submission>
+- GitHub Review API event: <COMMENT | REQUEST_CHANGES | APPROVE | none>
+- Review event decision: <clean | blocking Must Fix | non-blocking/uncertain | comment-only | no safe submission>
 
 ## Draft 요약
 
