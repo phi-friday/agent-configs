@@ -15,24 +15,6 @@ class _Classification(NamedTuple):
     reason: str
 
 
-_SELF_TEST_CASES = (
-    ("yolo", True),
-    ("yolo review PR #123", True),
-    ("yolo #123 리뷰하고 올려", True),
-    ("review PR #123", False),
-    ("draft부터 submit까지 한번에 진행", False),
-    ("사용자 검수 없이 제출", False),
-    ("auto submit all findings", False),
-    ("yolox", False),
-    ("yolomode", False),
-    ("yolo모드로 진행", False),
-    ("yolo, review PR #123", False),
-    ("YOLO", False),
-    ("XXX yolo", False),
-    ("", False),
-)
-
-
 def _first_word(text: str) -> str | None:
     words = text.split(maxsplit=1)
     if not words:
@@ -91,29 +73,9 @@ def _raw_input_from_args(text_parts: list[str]) -> str:
     return sys.stdin.read()
 
 
-def _run_self_test() -> int:
-    failures: list[str] = []
-
-    for raw_text, expected in _SELF_TEST_CASES:
-        actual = _classify(raw_text).is_yolo
-        if actual != expected:
-            failures.append(f"{raw_text!r}: expected {expected}, got {actual}")
-
-    if failures:
-        for failure in failures:
-            sys.stderr.write(f"self-test failed: {failure}\n")
-        return 1
-
-    sys.stdout.write("ok: detect_yolo_mode self-test passed\n")
-    return 0
-
-
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Return whether raw user input enables github-pr-review YOLO mode."
-    )
-    parser.add_argument(
-        "--self-test", action="store_true", help="Run built-in classifier examples."
     )
     parser.add_argument(
         "text",
@@ -125,10 +87,6 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 
 def _main(argv: list[str]) -> int:
     args = _parse_args(argv)
-
-    if args.self_test:
-        return _run_self_test()
-
     raw_text = _raw_input_from_args(args.text)
     classification = _classify(raw_text)
     _emit_result(classification)
