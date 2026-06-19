@@ -24,7 +24,7 @@ Examples:
 
 Do not infer YOLO mode from uppercase, suffixes, later words, or synonyms such as `auto`, `자동`, `한번에`, `바로 제출`, `검수 없이`, or `no approval`.
 
-YOLO mode means: run Draft mode, then submit every selected actionable draft finding in the same run without payload approval. Use `references/yolo-mode.md`.
+YOLO mode means: run Draft mode, choose the GitHub Review API event from the same-run findings, then submit or approve without payload approval. Use `references/yolo-mode.md`.
 
 Use Draft mode when the user asks to analyze or review a PR without explicit publication wording.
 
@@ -65,7 +65,7 @@ Ask one mode-selection question with at least these options:
 
 1. `Draft review only` — Analyze the PR and report findings in chat without writing to GitHub.
 2. `Submit existing draft findings` — Publish selected `PRF-*` findings from an existing draft after exact payload approval.
-3. `YOLO draft and submit` — Valid only if `detect_mode.py` returns `"mode": "yolo"` for the original user input; otherwise explain that YOLO requires first-word `yolo` or `yolo,` and do not select it.
+3. `YOLO draft and submit/request-changes/approve` — Valid only if `detect_mode.py` returns `"mode": "yolo"` for the original user input; otherwise explain that YOLO requires first-word `yolo` or `yolo,` and do not select it.
 
 Recommended default: `Draft review only`.
 
