@@ -5,6 +5,22 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "flake8==7.3.0",
+    "flake8-agents==0.2.0",
+    "poethepoet==0.46.0",
     "pyrefly==1.1.1",
     "ruff==0.15.18",
 ]
+
+[tool.poe.tasks.pyrefly]
+cmd = "pyrefly check in-progress"
+[tool.poe.tasks.pyre]
+ref = "pyrefly"
+[tool.poe.tasks.format]
+cmd = "ruff format in-progress"
+[tool.poe.tasks._lint]
+cmd = "ruff check in-progress"
+[tool.poe.tasks._flake]
+cmd = "flake8 in-progress"
+[tool.poe.tasks.lint]
+sequence = ["format", "_lint", "pyrefly", "_flake"]
