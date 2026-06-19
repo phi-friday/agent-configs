@@ -14,7 +14,7 @@ RESOLVE DRAFT VS SUBMIT VS YOLO MODE BEFORE REVIEW WORK.
 NO GITHUB MUTATION DURING DRAFT MODE.
 NO SUBMISSION WITHOUT AN EXISTING PRF-* DRAFT, EXCEPT YOLO MODE'S SAME-RUN DRAFT.
 NO USER-APPROVAL BYPASS OUTSIDE EXPLICIT YOLO MODE.
-YOLO MODE ONLY WHEN USER INPUT'S FIRST WORD IS EXACTLY `yolo`.
+YOLO MODE ONLY WHEN `scripts/detect_mode.py` RETURNS MODE `yolo`.
 NO NEW FINDINGS DURING NORMAL SUBMIT MODE.
 ALWAYS ANSWER THE USER IN KOREAN.
 ```
@@ -27,7 +27,7 @@ Open only the reference needed for the current mode:
 - `references/draft-mode.md` — read-only PR review workflow and draft output contract.
 - `references/submit-mode.md` — selected finding submission workflow and GitHub mutation guardrails.
 - `references/yolo-mode.md` — same-run draft and submit workflow without user inspection.
-- `scripts/detect_yolo_mode.py` — mandatory script classifier for YOLO mode.
+- `scripts/detect_mode.py` — explicit `draft`/`submit`/`yolo` mode keyword classifier.
 - `references/payload-approval.md` — exact preview and mandatory `ask` approval gate for normal Submit mode.
 
 ## Use When
@@ -48,20 +48,20 @@ Do not use this as a generic code review workflow when there is no GitHub PR con
 Before inspecting the PR, reading a diff, or preparing a payload, classify the user's latest request.
 
 ```text
-review / analyze / check PR / PR number or branch only
+first word is exact `draft` or `draft,`
     └─ Draft mode
 
-submit / post / upload / 올려 / 제출 / publish PRF-* findings
+first word is exact `submit` or `submit,`
     └─ Submit mode
 
-user input's first word is exactly `yolo`
+first word is exact `yolo` or `yolo,`
     └─ YOLO mode: draft and submit in one run without payload approval
 
 unclear whether the user wants review analysis or GitHub publication
     └─ Ambiguous: ask with the ask tool, then continue in the selected mode
 ```
 
-Use `references/mode-selection.md` for the exact classifier. YOLO mode must be confirmed by `scripts/detect_yolo_mode.py`, not by LLM judgment alone.
+Use `references/mode-selection.md` for the exact classifier. Run `scripts/detect_mode.py` first; explicit `draft`, `submit`, and `yolo` keywords override LLM inference, while no explicit keyword falls back to normal intent resolution.
 
 If mode is ambiguous, do not ask in ordinary prose and stop. Use the `ask` tool with mode choices, then continue the chosen workflow after the answer.
 
@@ -71,8 +71,8 @@ YOLO mode runs Draft mode and then submits the resulting findings in one run.
 
 Hard boundaries:
 
-- only use when the user's latest input has `yolo` as its exact first word
-- do not infer YOLO mode from uppercase `YOLO`, suffixes like `yolox`, later words like `XXX yolo`, or synonyms such as “auto”, “바로 제출”, or “검수 없이”
+- only use when `scripts/detect_mode.py` returns mode `yolo` for the user's latest input
+- do not infer YOLO mode from uppercase `YOLO`, suffixes like `yolox`, later words like `XXX yolo`, or synonyms such as “auto”, “바로 제출”, or “검수 없이”; `yolo,` is the only allowed punctuation form
 - do not call the `ask` tool for payload approval
 - still validate PR context, anchors, file paths, payload shape, and GitHub mutation scope before submitting
 - if any selected finding cannot be faithfully submitted, stop before mutation and report the blocker

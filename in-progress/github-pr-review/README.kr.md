@@ -21,7 +21,7 @@ github-pr-review/
 │  ├─ yolo-mode.md
 │  └─ payload-approval.md
 └─ scripts/
-   └─ detect_yolo_mode.py
+   └─ detect_mode.py
 ```
 
 ## 파일 역할
@@ -33,9 +33,9 @@ github-pr-review/
 - `references/mode-selection.md`: user input을 Draft, Submit, YOLO, ambiguous로 분류하는 규칙.
 - `references/draft-mode.md`: read-only PR review workflow와 draft output format.
 - `references/submit-mode.md`: selected `PRF-*` submission workflow와 mutation scope.
-- `references/yolo-mode.md`: user input의 첫 단어가 정확히 `yolo`일 때만 enable되는 same-run draft and submit workflow.
+- `references/yolo-mode.md`: classifier가 explicit mode `yolo`를 반환할 때만 enable되는 same-run draft and submit workflow.
 - `references/payload-approval.md`: normal Submit mode의 exact preview format과 mandatory `ask` approval gate.
-- `scripts/detect_yolo_mode.py`: raw user input이 YOLO mode를 enable하는지 판정하는 runtime classifier.
+- `scripts/detect_mode.py`: raw user input의 explicit `draft`, `submit`, `yolo` mode keyword를 판정하는 runtime classifier.
 
 ## Scope
 
@@ -45,7 +45,7 @@ github-pr-review/
 - stable `PRF-*` review finding ID를 만들 때
 - draft finding을 later submission으로 handoff할 때
 - existing draft에서 selected finding을 제출할 때
-- user inspection gate 없이 첫 단어 `yolo` draft-and-submit을 실행할 때
+- user inspection gate 없이 explicit `yolo`/`yolo,` draft-and-submit을 실행할 때
 - 의도적으로 제외된 review context를 보존할 때
 
 GitHub PR target이 없는 generic code review skill로 사용하지 않는다.
@@ -68,5 +68,5 @@ resolve mode
 핵심 규칙:
 
 ```text
-mode resolve → 안전하게 draft, existing draft에서 submit, 또는 first-word yolo → input이 정확한 `yolo`로 시작하지 않으면 approval bypass 금지
+mode resolve → explicit `draft`/`submit`/`yolo` keyword가 있으면 사용 → `detect_mode.py`가 mode `yolo`를 반환하지 않으면 approval bypass 금지
 ```

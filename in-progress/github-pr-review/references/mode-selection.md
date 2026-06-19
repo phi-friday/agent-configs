@@ -2,26 +2,27 @@
 
 Resolve the user's latest request before doing review work. The possible modes are Draft, normal Submit, YOLO, and Ambiguous.
 
-## Classifier
+## Explicit Keyword Classifier
 
-Use YOLO mode only when `scripts/detect_yolo_mode.py` confirms the user's latest raw input has `yolo` as its exact first word.
-
-Mandatory classifier:
+Run the classifier before LLM intent inference:
 
 ```sh
-python scripts/detect_yolo_mode.py -- "<raw latest user input>"
+python scripts/detect_mode.py -- "<raw latest user input>"
 ```
 
-Only exit code `0` and JSON field `"is_yolo": true` permit YOLO mode. Exit code `1` or `"is_yolo": false` means normal Draft/Submit/Ambiguous handling.
+Exit code `0` and JSON field `"mode": "draft"`, `"submit"`, or `"yolo"` means the user explicitly selected that mode. Exit code `1` or `"mode": null` means no explicit keyword was found; continue normal Draft/Submit/Ambiguous inference below.
 
-The script's rule is case-sensitive and word-exact: first whitespace-delimited word equals lowercase `yolo`. It accepts `yolo` and `yolo PR #123`. It rejects `YOLO`, `yolox`, `yolomode`, `yolo모드`, `yolo,`, and `XXX yolo`.
-
-Do not infer YOLO mode from uppercase, suffixes, later words, or synonyms such as `auto`, `자동`, `한번에`, `바로 제출`, `검수 없이`, or `no approval`.
+The script's rule is case-sensitive and first-word exact. It accepts lowercase `draft`, `submit`, or `yolo` as the first whitespace-delimited word. It also accepts exactly one trailing comma as a separator: `draft,`, `submit,`, or `yolo,`. It rejects uppercase, suffixes such as `yolox`, `submitx`, `drafting`, `yolo모드`, comma-plus-suffix forms such as `yolo,review`, and later words such as `XXX yolo`.
 
 Examples:
 
-- `yolo review PR #123`
-- `yolo #123 리뷰하고 올려`
+- `draft review PR #123`
+- `draft, PR #123 봐줘`
+- `submit PRF-001`
+- `submit, PRF-002 제외하고 제출해`
+- `yolo, review PR #123`
+
+Do not infer YOLO mode from uppercase, suffixes, later words, or synonyms such as `auto`, `자동`, `한번에`, `바로 제출`, `검수 없이`, or `no approval`.
 
 YOLO mode means: run Draft mode, then submit every selected actionable draft finding in the same run without payload approval. Use `references/yolo-mode.md`.
 
@@ -64,7 +65,7 @@ Ask one mode-selection question with at least these options:
 
 1. `Draft review only` — Analyze the PR and report findings in chat without writing to GitHub.
 2. `Submit existing draft findings` — Publish selected `PRF-*` findings from an existing draft after exact payload approval.
-3. `YOLO draft and submit` — Valid only if `detect_yolo_mode.py` returns `"is_yolo": true` for the original user input; otherwise explain that YOLO requires first-word `yolo` and do not select it.
+3. `YOLO draft and submit` — Valid only if `detect_mode.py` returns `"mode": "yolo"` for the original user input; otherwise explain that YOLO requires first-word `yolo` or `yolo,` and do not select it.
 
 Recommended default: `Draft review only`.
 
@@ -72,7 +73,7 @@ After the user answers:
 
 - If Draft is selected, continue Draft mode in the same turn.
 - If Submit is selected, validate the Submit mode prerequisite, then continue normal Submit mode.
-- If YOLO is selected, run `scripts/detect_yolo_mode.py` against the original user input first. If it does not return `"is_yolo": true`, report that YOLO mode requires first-word `yolo` and fall back to Draft or ask again.
+- If YOLO is selected, run `scripts/detect_mode.py` against the original user input first. If it does not return `"mode": "yolo"`, report that YOLO mode requires first-word `yolo` or `yolo,` and fall back to Draft or ask again.
 - If the typed answer gives a third path, follow it only when it is specific enough and does not bypass safety gates.
 
 ## Do Not Infer Publication Permission
@@ -84,6 +85,6 @@ These are not approval to submit GitHub comments:
 - the user selected Submit mode
 - the user selected `PRF-*` IDs
 - a previous message sounded positive
-- the user asked for automatic submission without first-word `yolo`
+- the user asked for automatic submission without explicit first-word `yolo` or `yolo,`
 
-Outside first-word YOLO mode, GitHub mutation still requires the exact payload preview and `ask` approval gate from `payload-approval.md`.
+Outside explicit YOLO mode, GitHub mutation still requires the exact payload preview and `ask` approval gate from `payload-approval.md`.

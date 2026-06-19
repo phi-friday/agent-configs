@@ -21,7 +21,7 @@ github-pr-review/
 │  ├─ yolo-mode.md
 │  └─ payload-approval.md
 └─ scripts/
-   └─ detect_yolo_mode.py
+   └─ detect_mode.py
 ```
 
 ## File Roles
@@ -33,9 +33,9 @@ github-pr-review/
 - `references/mode-selection.md`: Rules for classifying user input as Draft, Submit, YOLO, or ambiguous.
 - `references/draft-mode.md`: Read-only PR review workflow and draft output format.
 - `references/submit-mode.md`: Selected `PRF-*` submission workflow and mutation scope.
-- `references/yolo-mode.md`: Same-run draft and submit workflow, enabled only when the first user-input word is exactly `yolo`.
+- `references/yolo-mode.md`: Same-run draft and submit workflow, enabled only when the classifier returns explicit mode `yolo`.
 - `references/payload-approval.md`: Exact preview format and mandatory `ask` approval gate for normal Submit mode.
-- `scripts/detect_yolo_mode.py`: Runtime classifier for whether the raw user input enables YOLO mode.
+- `scripts/detect_mode.py`: Runtime classifier for explicit `draft`, `submit`, and `yolo` mode keywords.
 
 ## Scope
 
@@ -45,7 +45,7 @@ Use this skill when:
 - creating stable `PRF-*` review finding IDs
 - preparing a handoff from draft findings to later submission
 - submitting selected findings from an existing draft
-- running first-word `yolo` draft-and-submit without a user inspection gate
+- running explicit `yolo`/`yolo,` draft-and-submit without a user inspection gate
 - preserving intentionally excluded review context
 
 Do not use it as a generic code review skill without a GitHub PR target.
@@ -68,5 +68,5 @@ resolve mode
 Core rule:
 
 ```text
-resolve mode → draft safely, submit from existing draft, or first-word yolo → never bypass approval unless the input starts with exact `yolo`
+resolve mode → use explicit `draft`/`submit`/`yolo` keywords when present → never bypass approval unless `detect_mode.py` returns mode `yolo`
 ```

@@ -2,21 +2,22 @@
 
 YOLO mode drafts a PR review and submits the resulting findings in one run.
 
-Use it only when the mandatory classifier script confirms the user's latest raw input has `yolo` as its exact first word.
+Use it only when the mandatory classifier script confirms the user's latest raw input has explicit mode `yolo`.
 
 ```sh
-python scripts/detect_yolo_mode.py -- "<raw latest user input>"
+python scripts/detect_mode.py -- "<raw latest user input>"
 ```
 
-Only exit code `0` and JSON field `"is_yolo": true` permit YOLO mode. Do not classify YOLO mode by LLM judgment alone.
+Only exit code `0` and JSON field `"mode": "yolo"` permit YOLO mode. Do not classify YOLO mode by LLM judgment alone.
 
-The script's match is case-sensitive and word-exact: first whitespace-delimited word equals lowercase `yolo`.
+The script's match is case-sensitive and word-exact: the first whitespace-delimited word equals lowercase `yolo` or exactly `yolo,`.
 
 Examples that enable YOLO mode:
 
 - `yolo`
 - `yolo review PR #123`
 - `yolo #123 리뷰하고 올려`
+- `yolo, review PR #123`
 
 Examples that do not enable YOLO mode:
 
@@ -24,7 +25,7 @@ Examples that do not enable YOLO mode:
 - `yolox`
 - `yolomode`
 - `yolo모드로 진행`
-- `yolo, review PR #123`
+- `yolo,review PR #123`
 - `XXX yolo`
 - `draft부터 submit까지 한번에 진행`
 - `사용자 검수 없이 제출`
@@ -33,7 +34,7 @@ Examples that do not enable YOLO mode:
 
 ## Hard Boundaries
 
-No user inspection gate. The user already opted into this by making exact `yolo` the first input word.
+No user inspection gate. The user already opted into this by making exact `yolo` or `yolo,` the first input word.
 
 Do not call the `ask` tool for payload approval.
 
