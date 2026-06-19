@@ -1,6 +1,6 @@
 servers:
   pyrefly:
-    command: uvx
+    command: uv
     args: ["pyrefly", "lsp"]
     fileTypes: [".py", ".pyi"]
     rootMarkers: ["pyrefly.toml", ".git"]
@@ -9,7 +9,7 @@ servers:
         typeCheckingMode: default
 
   ruff:
-    command: uvx
+    command: uv
     args: ["ruff", "server", "--color", "never"]
     fileTypes: [".py", ".pyi"]
     rootMarkers: ["ruff.toml", ".git"]
