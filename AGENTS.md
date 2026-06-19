@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This repository holds personal AI-agent configuration and custom skills. First-party skill work is organized locally, with external reference repositories vendored as Git submodules under `references/` for inspiration, comparison, and license provenance.
+This repository is a personal AI-agent configuration and first-party skill authoring repo. Canonical skill sources live in `in-progress/`; published/runtime copies live in `skills/`; external inspiration and provenance material lives in `references/` Git submodules.
 
 ## Architecture & Data Flow
 
@@ -13,10 +13,10 @@ This repository holds personal AI-agent configuration and custom skills. First-p
 
 ## Key Directories
 
-- `in-progress/`: Draft first-party skills. Typical shape: `SKILL.md`, `SKILL.kr.md`, `README.md`, `README.kr.md`, and optional `references/` support docs/scripts.
-- `skills/`: Published skill output directories used by agent tooling. Current published folders are ignored by `skills/.gitignore`; treat generated output carefully and prefer editing source material before publishing.
-- `references/`: External Git submodules (`mattpocock/skills`, `obra/superpowers`, `Fission-AI/OpenSpec`). Do not treat their source or tests as first-party code.
-- `.omp/`: Harness/tooling integration; `.omp/lsp.yaml` starts Pyrefly LSP through `uvx`.
+- `in-progress/`: first-party skill source of truth. Typical skill shape: `SKILL.md`, `SKILL.kr.md`, `README.md`, `README.kr.md`, plus optional `references/` and `scripts/`.
+- `skills/`: published/runtime skill output. Prefer editing `in-progress/` and republishing instead of editing generated copies directly. Lock-managed external outputs are listed in `skills/.gitignore`.
+- `references/`: external Git submodules (`mattpocock/skills`, `obra/superpowers`, `Fission-AI/OpenSpec`). Treat as vendored reference material, not first-party code.
+- `.omp/`: harness integration. `.omp/lsp.yaml` starts Pyrefly and Ruff language servers through local `uv` tooling.
 
 ## Development Commands
 
@@ -27,29 +27,32 @@ git submodule update --init --recursive
 # Link this repo as the active agent config
 uv run --script setup_agents.py
 
-# Publish skills from in-progress/ into skills/; this removes unmanaged skill outputs
+# Publish first-party skills from in-progress/ into skills/
 uv run --script publish_skills.py
 
-# Python lint/format
-ruff check .
-ruff check . --fix
-ruff format .
+# Install missing lock-managed external skills only
+uv run --script install_locked_skills.py
 
-# Pyrefly language server command used by the harness
-uvx pyrefly lsp
+# Poe aggregate from pyproject.toml
+uv run poe lint
+
+# Individual tool commands; avoid invoking underscored Poe internals directly
+uv run ruff format in-progress
+uv run ruff check in-progress
+uv run pyrefly check in-progress
+uv run flake8 in-progress
 ```
 
-Before running `publish_skills.py`, check `.skill-lock.json`; the script refuses to overwrite lock-managed skill roots and deletes unmanaged existing directories in `skills/`.
+For root Python script edits, run narrow direct checks with project-local tools, e.g. `uv run ruff check publish_skills.py install_locked_skills.py`. Use tools installed from `pyproject.toml` via `uv run` or Poe.
 
 ## Code Conventions & Common Patterns
 
-- Python targets 3.14 (`ruff.toml`, `pyrefly.toml`); `publish_skills.py` uses a PEP 723 `uv` script header and stdlib-only dependencies.
-- Formatting: Ruff, 88 columns, spaces, double quotes, preview formatting enabled. Ruff and Pyrefly exclude `skills/**` and `references/**`.
-- Type style: keep annotations explicit; Pyrefly checks unannotated definitions and promotes many type issues to errors.
-- Error handling: use small validation helpers and fail fast with clear stderr messages plus `SystemExit(1)`.
-- Shelling out: centralize subprocess calls behind helpers (`run_stdout`, `optional_stdout`) and use required vs optional command behavior intentionally.
-- Determinism: sort filesystem-derived lists before acting; keep generated Markdown marker blocks stable.
-- Markdown skills commonly use frontmatter, imperative headings, explicit Always/Never rules, examples, and adjacent reference docs rather than hidden implementation assumptions.
+- Python targets 3.14 behavior in tooling (`ruff.toml`, `pyrefly.toml`, `.python-version` is `3.14t`); `pyproject.toml` requires `>=3.13`.
+- Formatting: Ruff, 88 columns, spaces, double quotes, preview formatting enabled. Ruff/Pyrefly exclude `skills/**` and `references/**`.
+- Type style: keep annotations explicit. Pyrefly checks unannotated definitions and promotes many type issues to errors.
+- Script style: stdlib-first, `pathlib.Path`, deterministic sorted filesystem lists, bounded `ThreadPoolExecutor` for slow independent I/O, small helpers for validation and subprocess calls.
+- Error handling: fail fast with clear prefixed stderr messages plus `SystemExit(1)`; keep required vs optional subprocess behavior explicit (`run_stdout` vs `optional_stdout`).
+- Markdown skill style: frontmatter, imperative headings, explicit Always/Never rules, concise examples, and adjacent reference docs instead of hidden assumptions. English and Korean files should stay aligned when both exist.
 
 ## Important Files
 
@@ -66,14 +69,16 @@ Before running `publish_skills.py`, check `.skill-lock.json`; the script refuses
 
 ## Runtime/Tooling Preferences
 
-- Prefer `uv`/`uvx` for Python script and tool execution when commands are not already installed.
-- Required local tools for normal maintenance: `git`, `uv`, `ruff`, and Pyrefly tooling.
-- Keep `references/` initialized when updating skills that cite upstream material; `publish_skills.py` records referenced submodule HEAD commits in published README files.
-- Do not run checks over `references/**` or generated `skills/**` unless intentionally working inside those external/generated trees.
+- Prefer `uv` for Python script/tool execution and lockfile-backed environments.
+- Prefer `uv run poe lint` for the configured aggregate check. Use direct `uv run ruff ...`, `uv run pyrefly ...`, or `uv run flake8 ...` for narrow file- or tool-specific checks.
+- Node/npm is required only for lock-managed skill installation through `npx skills add`.
+- Keep `references/` initialized when updating skills that cite upstream material; publishing records referenced submodule commits in generated README marker blocks.
+- Do not run checks over `references/**` or generated `skills/**` unless intentionally working inside external/generated trees.
 
 ## Testing & QA
 
-- No first-party automated test suite or test runner is defined at the repository root.
-- External tests under `references/**` belong to their upstream repositories and are reference material only.
-- For Python changes, run the narrowest relevant Ruff/Pyrefly checks and exercise the changed behavior directly. For `publish_skills.py`, prefer temporary directories via `REPO_ROOT`, `IN_PROGRESS_DIR`, `SKILLS_DIR`, and `LOCK_FILE` rather than mutating real skill outputs.
-- Follow the repository's TDD guidance in `in-progress/test-driven-development/`: test observable behavior through public interfaces, cover edge/error cases, avoid private-method and call-order assertions, and do not add test-only production branches.
+- No first-party automated test suite or root `test` task is configured.
+- For Python/script changes, run the narrowest relevant Ruff/Pyrefly/Flake8 checks and exercise changed behavior directly.
+- For `publish_skills.py`, prefer temporary directories via `REPO_ROOT`, `IN_PROGRESS_DIR`, `SKILLS_DIR`, and `LOCK_FILE` instead of mutating real skill outputs.
+- For `install_locked_skills.py`, verify lock parsing/missing-skill behavior with temporary `REPO_ROOT`/`LOCK_FILE`; avoid real global installs unless that is the behavior under test.
+- Follow the repository's own skill guidance: behavior-first checks, public interfaces, fresh evidence before claiming done, and exact command/output scope in final reports.
