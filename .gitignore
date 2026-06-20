@@ -27,3 +27,5 @@ htmlcov/
 
 # secrets
 *.pem
+
+/AGENTS.md
