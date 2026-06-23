@@ -1,6 +1,6 @@
 # YOLO Mode
 
-YOLO mode drafts a PR review, then submits actionable findings or approves the PR when the draft is clean.
+YOLO mode drafts a PR review, then submits actionable findings, approves the PR when the draft is clean, or uses a comment fallback when the authenticated reviewer authored the PR.
 
 Use it only when the mandatory classifier script confirms the user's latest raw input has explicit mode `yolo`.
 
@@ -49,18 +49,20 @@ Still stop before mutation when required information is missing or unsafe:
 
 YOLO mode bypasses only the payload approval gate. It does not bypass PR resolution, existing-context review, anchor validation, payload construction, or GitHub mutation limits.
 
-Approve only when Event Mode permits `APPROVE`. Otherwise never approve while submitting actionable findings, and never merge, close, reopen, label, assign, edit, commit, or push.
+Approve only when Event Mode permits `APPROVE` and the PR author login differs from the viewer login. Self-authored PRs that would otherwise use `APPROVE` or `REQUEST_CHANGES` must use `COMMENT` instead. Otherwise never approve while submitting actionable findings, and never merge, close, reopen, label, assign, edit, commit, or push.
 
 ## Workflow
 
 Run Draft mode first.
 
 1. Resolve the target PR from the user input or current branch.
-2. Read existing PR context before the diff.
+2. Read existing PR context before the diff, including the PR author login and viewer login from `gh api user --jq .login`.
 3. Inspect the diff and validation evidence.
 4. Produce actionable findings with stable `PRF-*` IDs and submission targets.
 5. Choose the GitHub Review API event with Event Mode below.
-6. If Event Mode chooses `APPROVE`, validate that the current `headRefOid` still matches the reviewed commit, then submit exactly one GitHub PR review with event `APPROVE`, no inline comments, and a concise Korean body saying no actionable findings were found.
+6. If Event Mode chooses `APPROVE`, validate that the current `headRefOid` still matches the reviewed commit and that the PR author login differs from the viewer login, then submit exactly one GitHub PR review with event `APPROVE`, no inline comments, and a concise Korean body that starts with `리뷰 상태: 승인(APPROVE)` and says no actionable findings were found.
+
+If Event Mode falls back from `APPROVE` to `COMMENT` for a clean self-authored PR, submit exactly one top-level `COMMENT` review with no inline comments. The body must start with `리뷰 상태: 코멘트(COMMENT)`, say that no actionable findings were found, and mention the self-authored PR fallback.
 
 If Event Mode chooses `COMMENT` or `REQUEST_CHANGES`, submit from the just-created draft.
 
@@ -96,9 +98,11 @@ In YOLO mode, the agent owns the GitHub review event.
 Decision order:
 
 1. Stop before mutation when PR resolution, repository context, target validation, payload construction, or head-commit validation is unsafe.
-2. Use `APPROVE` only when the same-run Draft mode found no actionable findings and validation shows no failing or pending merge-blocking checks.
-3. Use `REQUEST_CHANGES` when at least one selected finding is a high-confidence blocking `Must Fix`.
-4. Use `COMMENT` for non-blocking findings, uncertain evidence, pending or unclear validation, or explicit comment-only behavior.
+2. Use `APPROVE` only when the same-run Draft mode found no actionable findings, validation shows no failing or pending merge-blocking checks, and the PR author login differs from the viewer login.
+3. For a clean self-authored PR that would otherwise use `APPROVE`, use `COMMENT` instead; the top-level body must say no actionable findings were found and mention the self-authored PR fallback.
+4. Use `REQUEST_CHANGES` when at least one selected finding is a high-confidence blocking `Must Fix` and the PR author login differs from the viewer login.
+5. For a self-authored PR, if blocking `Must Fix` would otherwise choose `REQUEST_CHANGES`, use `COMMENT` instead and submit every selected finding; report this fallback.
+6. Use `COMMENT` for non-blocking findings, uncertain evidence, pending or unclear validation, or explicit comment-only behavior.
 
 Blocking `Must Fix` means a finding that should prevent merge until fixed:
 
@@ -120,6 +124,19 @@ Explicit event wording in the same YOLO request can only narrow this policy:
 - If approval is explicitly forbidden and the draft is clean, do not approve; report that no GitHub review was submitted unless the same request explicitly asks for a top-level no-findings comment.
 
 Never approve a PR while submitting actionable findings.
+
+## Review Body Event Header
+
+Every submitted top-level review body must start with one of these labels:
+
+- `리뷰 상태: 코멘트(COMMENT)`
+- `리뷰 상태: 수정 요청(REQUEST_CHANGES)`
+- `리뷰 상태: 승인(APPROVE)`
+
+Use the effective GitHub Review API event, not the user's requested event, for this first line. For self-authored PR fallbacks, the first line is `리뷰 상태: 코멘트(COMMENT)` and the next paragraph explains that GitHub cannot accept the requested `APPROVE` or `REQUEST_CHANGES` event from the PR author.
+
+For inline-only review bodies, keep the event label first and then add the short summary, for example `인라인 리뷰 코멘트를 남겼습니다.`. For approval bodies, state that no actionable findings were found.
+
 
 ## Preview Handling
 
@@ -150,7 +167,7 @@ Answer in Korean.
 - 제외한 항목: <PRF-002 or 없음>
 - 제출 방식: <review comments | request changes | approval | no submission>
 - GitHub Review API event: <COMMENT | REQUEST_CHANGES | APPROVE | none>
-- Review event decision: <clean | blocking Must Fix | non-blocking/uncertain | comment-only | no safe submission>
+- Review event decision: <clean | clean self-authored PR fallback | blocking Must Fix | self-authored PR fallback | non-blocking/uncertain | comment-only | no safe submission>
 
 ## Draft 요약
 

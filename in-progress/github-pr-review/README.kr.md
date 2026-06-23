@@ -62,7 +62,7 @@ resolve mode
     │
     ├─ Submit mode ─▶ PRF-* 선택 → anchor validate → exact payload preview → ask approval → submit
     │
-    └─ YOLO mode ───▶ draft → event 선택 → blocker는 request changes, 그 외 comment, clean이면 approve
+    └─ YOLO mode ───▶ draft → event 선택 → blocker는 request changes, 그 외 comment, clean이면 approve; self-authored PR approve/request changes는 comment로 fallback
 ```
 
 핵심 규칙:

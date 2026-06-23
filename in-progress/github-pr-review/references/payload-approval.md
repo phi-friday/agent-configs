@@ -21,10 +21,13 @@ Use this structure:
 - 인라인 항목: <PRF-001 or 없음>
 - 상위 본문 항목: <PRF-003 or 없음>
 - 제외 항목: <PRF-002 or 없음>
-- 제출 방식: <review comments | request changes>
+- Requested GitHub Review API event: <COMMENT | REQUEST_CHANGES | APPROVE>
+- Effective GitHub Review API event: <COMMENT | REQUEST_CHANGES | APPROVE>
+- 제출 방식: <review comments | request changes | approval; explain self-authored PR fallback when requested/effective differ>
 - 제출 언어: <Korean by default; English only if explicitly requested>
 - 인라인 코멘트 수: <n>
 - 제외 컨텍스트: <details block included | 없음>
+- Review body first line: `리뷰 상태: 코멘트(COMMENT)` | `리뷰 상태: 수정 요청(REQUEST_CHANGES)` | `리뷰 상태: 승인(APPROVE)`
 - API: `POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews`
 
 ## 실제 GitHub 인라인 코멘트
@@ -63,6 +66,8 @@ Use this structure:
 If there are no inline comments, omit `comments` from the payload.
 
 If the PR head SHA changes after preview approval, do not submit the old payload; rebuild the payload and ask again.
+
+If the requested event differs from the effective event because a self-authored PR cannot receive `APPROVE` or `REQUEST_CHANGES`, the preview must show `COMMENT` in the actual payload and explicitly state that approval submits review comments instead of the requested event.
 
 If the submission language is not Korean, include a Korean inspection section before the actual GitHub content. If the submission language is Korean, do not duplicate the same content in a separate Korean inspection copy.
 
@@ -103,7 +108,7 @@ With inline comments:
 ```json
 {
   "event": "COMMENT",
-  "body": "인라인 리뷰 코멘트를 남겼습니다.",
+  "body": "리뷰 상태: 코멘트(COMMENT)\n\n인라인 리뷰 코멘트를 남겼습니다.",
   "commit_id": "<headRefOid>",
   "comments": [
     {
@@ -121,7 +126,7 @@ With only file/general findings:
 ```json
 {
   "event": "COMMENT",
-  "body": "<selected file/general findings>",
+  "body": "리뷰 상태: 코멘트(COMMENT)\n\n<selected file/general findings>",
   "commit_id": "<headRefOid>"
 }
 ```

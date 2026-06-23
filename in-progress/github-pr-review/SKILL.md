@@ -16,9 +16,9 @@ NO SUBMISSION WITHOUT AN EXISTING PRF-* DRAFT, EXCEPT YOLO MODE'S SAME-RUN DRAFT
 NO USER-APPROVAL BYPASS OUTSIDE EXPLICIT YOLO MODE.
 YOLO MODE ONLY WHEN `scripts/detect_mode.py` RETURNS MODE `yolo`.
 NO NEW FINDINGS DURING NORMAL SUBMIT MODE.
-YOLO MODE WITH ZERO ACTIONABLE FINDINGS MUST APPROVE THE PR UNLESS APPROVAL IS FORBIDDEN.
+YOLO MODE WITH ZERO ACTIONABLE FINDINGS MUST APPROVE THE PR UNLESS APPROVAL IS FORBIDDEN, EXCEPT SELF-AUTHORED PRS MUST FALL BACK TO COMMENT.
 YOLO MODE OWNS THE REVIEW EVENT.
-YOLO MODE WITH BLOCKING MUST FIX MUST REQUEST CHANGES.
+YOLO MODE WITH BLOCKING MUST FIX MUST REQUEST CHANGES, EXCEPT SELF-AUTHORED PRS MUST FALL BACK TO COMMENT.
 ALWAYS ANSWER THE USER IN KOREAN.
 ```
 
@@ -70,7 +70,7 @@ If mode is ambiguous, do not ask in ordinary prose and stop. Use the `ask` tool 
 
 ## YOLO Mode Summary
 
-YOLO mode runs Draft mode, then owns the GitHub Review API event: approve clean PRs, request changes for high-confidence blocking `Must Fix` findings, and comment otherwise.
+YOLO mode runs Draft mode, then owns the GitHub Review API event: approve clean PRs, request changes for high-confidence blocking `Must Fix` findings, and comment otherwise. If a self-authored PR would require `APPROVE` or `REQUEST_CHANGES`, submit the review with `COMMENT` instead.
 
 Hard boundaries:
 
@@ -79,8 +79,9 @@ Hard boundaries:
 - do not call the `ask` tool for payload approval
 - still validate PR context, anchors, file paths, payload shape, and GitHub mutation scope before submitting
 - if any selected finding cannot be faithfully submitted, stop before mutation and report the blocker
-- if the same-run draft finds no actionable findings and validation shows no failing or pending merge-blocking checks, submit exactly one `APPROVE` review without asking, unless the same request explicitly forbids approval
-- if any selected finding is a high-confidence blocking `Must Fix`, submit exactly one `REQUEST_CHANGES` review without asking
+- if the same-run draft finds no actionable findings and validation shows no failing or pending merge-blocking checks, submit exactly one `APPROVE` review without asking, unless the same request explicitly forbids approval or the self-authored PR fallback below applies
+- if any selected finding is a high-confidence blocking `Must Fix`, submit exactly one `REQUEST_CHANGES` review without asking, unless the self-authored PR fallback below applies
+- if the PR author login equals the current viewer login, GitHub may reject `APPROVE` and `REQUEST_CHANGES`; when Event Mode would choose either event for a self-authored PR, use `COMMENT` instead and still submit the review content
 - use `COMMENT` for non-blocking findings, uncertain evidence, pending or unclear validation, or explicit comment-only behavior
 
 YOLO mode submits every actionable draft finding by default unless the same YOLO request explicitly includes or excludes IDs/categories. It does not require the user to preselect `COMMENT` vs `REQUEST_CHANGES`; Event Mode in `references/yolo-mode.md` controls that decision.
