@@ -62,7 +62,7 @@ resolve mode
     │
     ├─ Submit mode ─▶ select PRF-* → validate anchors → preview exact payload → ask approval → submit
     │
-    └─ YOLO mode ───▶ draft → choose event → request changes for blockers, comment otherwise, approve when clean
+    └─ YOLO mode ───▶ draft → choose event → request changes for blockers, comment otherwise, approve when clean; self-authored PR approve/request changes fall back to comment
 ```
 
 Core rule:

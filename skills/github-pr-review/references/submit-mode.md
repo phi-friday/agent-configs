@@ -52,8 +52,11 @@ git status --short --branch
 git branch --show-current
 git remote -v
 gh repo view --json nameWithOwner,url
+gh api user --jq .login
 gh pr view <number> --json number,title,state,isDraft,author,baseRefName,headRefName,headRefOid,url,reviewDecision,mergeStateStatus
 ```
+
+Record the PR author login from `author.login` and the viewer login from `gh api user --jq .login`. Use those values before composing the preview so the approved payload already shows the effective GitHub Review API event.
 
 Use these commands only to validate selected inline anchors and file paths against the PR diff:
 
@@ -101,11 +104,15 @@ Inline comment bodies:
 Top-level review body:
 
 - must be non-empty when `event` is `COMMENT` or `REQUEST_CHANGES`
+- must start with `리뷰 상태:`. Use one of these labels:
+  - `리뷰 상태: 코멘트(COMMENT)`
+  - `리뷰 상태: 수정 요청(REQUEST_CHANGES)`
+  - `리뷰 상태: 승인(APPROVE)` — YOLO approval only; normal Submit mode never uses `APPROVE`
 - includes selected `file` findings
 - includes selected `general` findings
 - includes excluded-context details when needed
 - does not duplicate selected inline findings already in `comments[]`
-- if there are only inline findings and no excluded context, use `인라인 리뷰 코멘트를 남겼습니다.`
+- if there are only inline findings and no excluded context, use the event label first, then a short summary such as `인라인 리뷰 코멘트를 남겼습니다.`
 
 ## Excluded Review Context
 
@@ -152,7 +159,8 @@ gh api -X POST "repos/{owner}/{repo}/pulls/<number>/reviews" --input <payload-fi
 Rules:
 
 - Use `COMMENT` by default.
-- Use `REQUEST_CHANGES` only when the user explicitly requests it and approves that exact mode in the payload preview.
+- Use `REQUEST_CHANGES` only when the user explicitly requests it, the PR author login differs from the viewer login, and the user approves that exact effective event in the payload preview.
+- For a self-authored PR, GitHub rejects `REQUEST_CHANGES`; if the user requested request changes, set the effective event to `COMMENT`, disclose the fallback in the preview/result, and must still submit the selected findings as review comments after approval.
 - Do not approve the PR.
 - Do not use `gh pr review` for inline comments; it cannot submit the `comments[]` inline-review payload.
 - Do not use `gh pr comment` unless the user explicitly approves a separate fallback plan.
@@ -171,7 +179,8 @@ Answer in Korean.
 - 인라인 위치: <PRF-001 path/to/file.ts:42 RIGHT or 없음>
 - 제외한 항목: <PRF-002 or 없음>
 - 유지한 이전 제외 컨텍스트: <PRF-004 or 없음>
-- 제출 방식: <review comments | request changes>
+- 요청된 제출 방식: <review comments | request changes>
+- 실제 제출 방식: <review comments | request changes>
 - GitHub Review API event: <COMMENT | REQUEST_CHANGES>
 
 ## 비고
