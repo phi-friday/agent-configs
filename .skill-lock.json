@@ -30,16 +30,6 @@
       "installedAt": "2026-05-27T11:26:15.408Z",
       "updatedAt": "2026-06-13T13:55:42.618Z"
     },
-    "caveman": {
-      "source": "mattpocock/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/mattpocock/skills.git",
-      "skillPath": "skills/productivity/caveman/SKILL.md",
-      "skillFolderHash": "17972a1bdbf5909b9dbdc435ad348f0bf45f8664",
-      "pluginName": "mattpocock-skills",
-      "installedAt": "2026-05-27T11:27:12.732Z",
-      "updatedAt": "2026-06-13T13:55:42.628Z"
-    },
     "using-git-worktrees": {
       "source": "obra/superpowers",
       "sourceType": "github",
