@@ -5,48 +5,53 @@
       "source": "vercel-labs/agent-browser",
       "sourceType": "github",
       "sourceUrl": "https://github.com/vercel-labs/agent-browser.git",
+      "ref": "v0.31.1",
       "skillPath": "skills/agent-browser/SKILL.md",
-      "skillFolderHash": "c1470a475a0472fceda2401ea6763708a91680a8",
+      "skillFolderHash": "9b31e495b887e4ca123960415eca69fc7e1bba28",
       "pluginName": "agent-browser",
       "installedAt": "2026-02-03T03:44:15.487Z",
-      "updatedAt": "2026-06-13T13:55:52.187Z"
+      "updatedAt": "2026-07-10T15:41:42.431Z"
     },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",
       "sourceUrl": "https://github.com/vercel-labs/skills.git",
+      "ref": "v1.5.15",
       "skillPath": "skills/find-skills/SKILL.md",
-      "skillFolderHash": "3013fdeb8a11b10b1eb795ec3ae8bfca38f7c26d",
+      "skillFolderHash": "eb6a23305aea6e340d14b9de3766e721f9f4861b",
       "installedAt": "2026-02-27T07:53:29.494Z",
-      "updatedAt": "2026-06-13T13:55:54.159Z"
+      "updatedAt": "2026-07-10T15:29:00.215Z"
     },
     "prototype": {
       "source": "mattpocock/skills",
       "sourceType": "github",
       "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "ref": "v1.1.0",
       "skillPath": "skills/engineering/prototype/SKILL.md",
-      "skillFolderHash": "c91bdc5d02d42ed88a3082a8fa83338895b55bd4",
+      "skillFolderHash": "86dc9537ca578d75866329effa07398f30e69d6c7e906013ce3438053646c601",
       "pluginName": "mattpocock-skills",
       "installedAt": "2026-05-27T11:26:15.408Z",
-      "updatedAt": "2026-06-13T13:55:42.618Z"
+      "updatedAt": "2026-07-10T15:31:58.755Z"
     },
     "using-git-worktrees": {
       "source": "obra/superpowers",
       "sourceType": "github",
       "sourceUrl": "https://github.com/obra/superpowers.git",
+      "ref": "v6.1.1",
       "skillPath": "skills/using-git-worktrees/SKILL.md",
-      "skillFolderHash": "13a9643fb9e4b236173f7d4b56b15dac10394f1b",
+      "skillFolderHash": "069a24665c6ce34ca78da57727c84e3c05e65c76",
       "installedAt": "2026-05-27T11:28:02.925Z",
-      "updatedAt": "2026-06-13T13:55:49.575Z"
+      "updatedAt": "2026-07-10T15:31:12.562Z"
     },
     "last30days": {
       "source": "mvanhorn/last30days-skill",
       "sourceType": "github",
       "sourceUrl": "https://github.com/mvanhorn/last30days-skill.git",
+      "ref": "v3.11.1",
       "skillPath": "skills/last30days/SKILL.md",
-      "skillFolderHash": "63ee58e42ad33abd1e5b114f8f28f367681cb8ff",
+      "skillFolderHash": "954f0a2ca73a06dc03940c70c2f1427612a5f093",
       "installedAt": "2026-06-07T14:50:06.561Z",
-      "updatedAt": "2026-06-13T13:55:46.934Z"
+      "updatedAt": "2026-07-10T15:31:27.278Z"
     }
   },
   "dismissed": {

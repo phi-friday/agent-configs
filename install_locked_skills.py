@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from functools import partial
 from itertools import groupby
 from pathlib import Path
-from typing import NoReturn, cast
+from typing import NoReturn
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,9 +26,14 @@ class LockedSkill:
     name: str
     source: str
     skill_path: str
+    ref: str | None = None
+    source_type: str | None = None
 
 
 type CommandRunner = Callable[[list[str]], None]
+type JsonValue = (
+    str | int | float | bool | None | list[JsonValue] | dict[str, JsonValue]
+)
 
 
 def log(message: str) -> None:
@@ -54,16 +59,63 @@ def repo_paths() -> tuple[Path, Path]:
     return repo_root, lock_file
 
 
-def source_arg(metadata: dict[str, object]) -> str | None:
-    source = metadata.get("source")
-    if isinstance(source, str) and source:
-        return source
+def install_source(skill: LockedSkill, repo_root: Path | None = None) -> str:
+    if skill.source_type == "local":
+        source_path = Path(skill.source).expanduser()
+        if not source_path.is_absolute():
+            if repo_root is None:
+                return skill.source
+            source_path = repo_root / source_path
+        return str(source_path.resolve())
 
-    source_url = metadata.get("sourceUrl")
-    if isinstance(source_url, str) and source_url:
-        return source_url
+    if skill.ref is None:
+        return skill.source
 
-    return None
+    if "#" in skill.ref:
+        fail(f"invalid ref for lock-managed skill {skill.name}: {skill.ref}")
+
+    _, separator, existing_ref = skill.source.rpartition("#")
+    if not separator:
+        return f"{skill.source}#{skill.ref}"
+    if existing_ref == skill.ref:
+        return skill.source
+
+    fail(
+        "conflicting refs for lock-managed skill "
+        f"{skill.name}: source has {existing_ref}, metadata has {skill.ref}"
+    )
+
+
+def locked_skill_from_metadata(
+    name: str, metadata: dict[str, JsonValue]
+) -> LockedSkill | None:
+    raw_source = metadata.get("source")
+    raw_source_url = metadata.get("sourceUrl")
+    source = None
+    if isinstance(raw_source, str) and raw_source:
+        source = raw_source
+    elif isinstance(raw_source_url, str) and raw_source_url:
+        source = raw_source_url
+
+    skill_path = metadata.get("skillPath")
+    raw_ref = metadata.get("ref")
+    raw_source_type = metadata.get("sourceType")
+    if source is None or not isinstance(skill_path, str) or not skill_path:
+        return None
+    if raw_ref is not None and (not isinstance(raw_ref, str) or not raw_ref):
+        fail(f"invalid ref for lock-managed skill {name}")
+    if raw_source_type is not None and (
+        not isinstance(raw_source_type, str) or not raw_source_type
+    ):
+        fail(f"invalid sourceType for lock-managed skill {name}")
+
+    return LockedSkill(
+        name=name,
+        source=source,
+        skill_path=skill_path,
+        ref=raw_ref,
+        source_type=raw_source_type,
+    )
 
 
 def locked_skills(lock_file: Path) -> list[LockedSkill]:
@@ -71,7 +123,10 @@ def locked_skills(lock_file: Path) -> list[LockedSkill]:
         fail(f"missing skill lock file: {lock_file}")
 
     with lock_file.open("r", encoding="utf-8") as file:
-        lock = cast("dict[str, object]", json.load(file))
+        lock = json.load(file)
+
+    if not isinstance(lock, dict):
+        return []
 
     skills = lock.get("skills", {})
     if not isinstance(skills, dict):
@@ -84,13 +139,9 @@ def locked_skills(lock_file: Path) -> list[LockedSkill]:
         if not isinstance(raw_metadata, dict):
             continue
 
-        metadata = cast("dict[str, object]", raw_metadata)
-        source = source_arg(metadata)
-        skill_path = metadata.get("skillPath")
-        if source is None or not isinstance(skill_path, str) or not skill_path:
-            continue
-
-        locked.append(LockedSkill(name=name, source=source, skill_path=skill_path))
+        skill = locked_skill_from_metadata(name, raw_metadata)
+        if skill is not None:
+            locked.append(skill)
 
     return sorted(locked, key=lambda skill: skill.name)
 
@@ -128,6 +179,8 @@ def install_command(source: str, skills: list[LockedSkill]) -> list[str]:
         "--skill",
         *skill_names,
         "--global",
+        "--agent",
+        "codex",
         "--yes",
         "--full-depth",
     ]
@@ -161,12 +214,14 @@ def install_missing_locked_skills(
             return
         run_command(args, cwd=repo_root)
 
-    missing_by_source = groupby(
-        sorted(missing, key=lambda skill: (skill.source, skill.name)),
-        key=lambda skill: skill.source,
+    missing_with_sources = sorted(
+        ((install_source(skill, repo_root), skill) for skill in missing),
+        key=lambda item: (item[0], item[1].name),
     )
-    for source, source_skills_iter in missing_by_source:
-        source_skills = list(source_skills_iter)
+    for source, source_skills_iter in groupby(
+        missing_with_sources, key=lambda item: item[0]
+    ):
+        source_skills = [skill for _, skill in source_skills_iter]
         skill_names = ", ".join(skill.name for skill in source_skills)
         log(f"install missing lock-managed skill(s): {skill_names}")
         try:
