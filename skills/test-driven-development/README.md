@@ -62,19 +62,22 @@ Review this skill again when these files change:
 - `references/mattpocock/skills/skills/engineering/tdd/SKILL.md`
 - `references/mattpocock/skills/skills/engineering/tdd/tests.md`
 - `references/mattpocock/skills/skills/engineering/tdd/mocking.md`
-- `references/mattpocock/skills/skills/engineering/tdd/interface-design.md`
-- `references/mattpocock/skills/skills/engineering/tdd/deep-modules.md`
-- `references/mattpocock/skills/skills/engineering/tdd/refactoring.md`
 - `references/obra/superpowers/skills/test-driven-development/SKILL.md`
 - `references/obra/superpowers/skills/test-driven-development/testing-anti-patterns.md`
+
+Historical upstream paths (not current source, kept for provenance only, commit `694fa303...`):
+
+- `interface-design.md`
+- `deep-modules.md`
+- `refactoring.md`
 
 <!-- publish_skills:reference-commits:start -->
 ## Reference Commits
 
 Published against these submodule commits.
 
-- `references/mattpocock/skills`: `694fa30311e02c2639942308513555e61ee84a6f`
-- `references/obra/superpowers`: `6fd4507659784c351abbd2bc264c7162cfd386dc`
+- `references/mattpocock/skills`: `391a2701dd948f94f56a39f7533f8eea9a859c87`
+- `references/obra/superpowers`: `d884ae04edebef577e82ff7c4e143debd0bbec99`
 <!-- publish_skills:reference-commits:end -->
 
 License notices for the original repositories are covered by the root `NOTICE.md`.

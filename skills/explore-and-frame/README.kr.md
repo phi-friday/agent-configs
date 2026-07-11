@@ -18,16 +18,16 @@
 이 스킬은 네 개 레퍼런스의 역할을 하나의 탐색 스킬로 합쳤다.
 
 ```text
-brainstorming        → 질문과 요구사항 정리
-openspec-explore     → 자유 탐색 stance + 강한 시각화
-zoom-out             → 기존 코드의 상위 구조 지도화
-to-prd               → 정리된 결정을 PRD/결정 프레임으로 압축
+brainstorming                            → 질문과 요구사항 정리
+openspec-explore                         → 자유 탐색 stance + 강한 시각화
+historical zoom-out (제거된 개념)         → 기존 코드의 상위 구조 지도화
+to-spec (구 to-prd)                     → 정리된 결정을 PRD/결정 프레임으로 압축
 
                 explore-and-frame
         탐색 → 시각화 → 맥락 지도화 → 선택지 비교 → 결정 프레임
 ```
 
-`brainstorming`처럼 모든 작업을 무조건 긴 승인 절차로 끌고 가지 않고, `openspec-explore`처럼 탐색 자체의 유연성을 유지한다. 다만 탐색이 흐릿하게 끝나지 않도록 `zoom-out`의 코드 맥락 지도화와 `to-prd`의 문서화 프레임을 붙였다.
+`brainstorming`처럼 모든 작업을 무조건 긴 승인 절차로 끌고 가지 않고, `openspec-explore`처럼 탐색 자체의 유연성을 유지한다. 다만 탐색이 흐릿하게 끝나지 않도록 `historical zoom-out`의 코드 맥락 지도화와 `to-spec`(구 `to-prd`)의 문서화 프레임을 붙였다.
 
 ## 레퍼런스별로 가져온 요소
 
@@ -75,7 +75,7 @@ to-prd               → 정리된 결정을 PRD/결정 프레임으로 압축
 - 대신 일반 코드베이스와 일반 작업 대화에서도 쓸 수 있는 시각화/탐색 패턴만 남겼다.
 - “OpenSpec artifact 업데이트”는 “결정 메모/PRD 저장 제안”으로 일반화했다.
 
-### `mattpocock/skills`의 `zoom-out`
+### `mattpocock/skills`의 `zoom-out` (제거됨)
 
 가져온 요소:
 
@@ -89,7 +89,7 @@ to-prd               → 정리된 결정을 PRD/결정 프레임으로 압축
 - 이 스킬에서는 `What To Investigate` 섹션으로 확장해, 코드 탐색 시 확인해야 할 항목을 구체화했다.
 - 단순 설명이 아니라 이후 선택지 비교와 PRD/결정 프레임으로 이어지도록 연결했다.
 
-### `mattpocock/skills`의 `to-prd`
+### `mattpocock/skills`의 `to-spec` (구 `to-prd`)
 
 가져온 요소:
 
@@ -112,7 +112,7 @@ to-prd               → 정리된 결정을 PRD/결정 프레임으로 압축
    - openspec-explore의 다양한 진입점 처리
 
 2. What To Investigate
-   - zoom-out의 코드 맥락 지도화
+   - historical zoom-out (제거된 개념)의 코드 맥락 지도화
    - openspec-explore의 codebase grounding
 
 3. Questions
@@ -128,7 +128,7 @@ to-prd               → 정리된 결정을 PRD/결정 프레임으로 압축
    - constraint-driven recommendation
 
 6. Framing The Result
-   - to-prd의 PRD 구조
+   - to-spec (구 to-prd)의 PRD 구조
    - 작은 작업용 decision frame 추가
 
 7. Capturing Decisions
@@ -156,8 +156,8 @@ to-prd               → 정리된 결정을 PRD/결정 프레임으로 압축
 - `references/obra/superpowers/skills/brainstorming/spec-document-reviewer-prompt.md`
 - `references/Fission-AI/OpenSpec/src/core/templates/workflows/explore.ts`
 - `references/Fission-AI/OpenSpec/openspec/explorations/explore-workflow-ux.md`
-- `references/mattpocock/skills/skills/engineering/zoom-out/SKILL.md`
-- `references/mattpocock/skills/skills/engineering/to-prd/SKILL.md`
+- `references/mattpocock/skills/skills/engineering/to-spec/SKILL.md`
+- `zoom-out` 아이디어의 제거된 역사적 출처(현재 교체본 아님): https://github.com/mattpocock/skills/blob/694fa30311e02c2639942308513555e61ee84a6f/skills/engineering/zoom-out/SKILL.md (commit-pinned)
 
 ## 라이선스 메모
 

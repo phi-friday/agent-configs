@@ -13,6 +13,9 @@ Use parallel agents to reduce wall-clock time without losing control of scope, q
 PARALLELIZE ONLY INDEPENDENT WORK.
 EVERY SUBAGENT GETS A SELF-CONTAINED CONTRACT.
 THE CONTROLLER OWNS INTEGRATION AND FINAL VERIFICATION.
+Independent tasks in one wave are dispatched in ONE `task` call with multiple `tasks[]` entries.
+User "parallelize" requests are not equivalent to scattered turns or simple tool-level parallelization.
+Only use fields supported by this schema; do not include unsupported fields such as `model:`.
 ```
 
 Do not dispatch agents into the same unclear problem and hope they converge. Decompose first.
@@ -23,7 +26,7 @@ Keep this file as the operating checklist. Open supporting references when neede
 
 - `references/task-decomposition.md` — deciding what can run in parallel and what must be sequenced.
 - `references/subagent-prompts.md` — writing self-contained assignments with scope, constraints, and output contracts.
-- `references/review-integration.md` — reviewing agent output, resolving conflicts, and verifying the combined result.
+- `references/review-integration.md` — reviewing subagent output, resolving conflicts, and verifying the combined result.
 
 ## Use When
 
@@ -46,24 +49,36 @@ Do not use this when:
 
 ## Phase 1 — Map Independence
 
-Before dispatching, group work by domain and dependency.
+Before the first dispatch, build candidate tasks and run one **pre-flight conflict gate**.
 
 For each candidate task, identify:
 
 - exact files or subsystem
 - goal and non-goals
+- API/schema/output overlap with other tasks
 - dependencies on other tasks
 - expected output
-- whether it can succeed without seeing another agent's result
+- whether it can succeed without another task's finished output
 - likely conflicts with other tasks
 
 Parallelize only when tasks can complete correctly with the context provided up front.
+
+If the gate finds overlap:
+
+- split by domain,
+- sequence dependent work first,
+- then dispatch non-conflicting tasks in a batch.
 
 Use `references/task-decomposition.md` for the decision rules.
 
 ## Phase 2 — Create Focused Contracts
 
 Each subagent assignment must be self-contained.
+
+Use the current `task` schema exactly:
+
+- batch `context`: `# Goal`, `# Constraints`, `# Contract`
+- every `tasks[].assignment`: `# Target`, `# Change`, `# Acceptance`
 
 Include:
 
@@ -79,11 +94,13 @@ Do not make a subagent read a large plan and infer its slice. Extract the exact 
 
 Use `references/subagent-prompts.md` for assignment templates.
 
+For large task briefs, handoff files (`local://...`) instead of pasting large prompts.
+
 ## Phase 3 — Dispatch In Parallel
 
-Dispatch independent tasks together.
+Dispatch independent tasks together in one `task` batch.
 
-Keep batches small enough to integrate safely. Prefer two to five focused agents over one broad agent.
+Keep every assignment focused enough to integrate safely, but dispatch the full independent fan-out in one batch. Do not serialize work merely to enforce an arbitrary batch size; use separate waves only for real dependencies, shared contracts, or the tool's concurrency boundary.
 
 The controller remains responsible for:
 
@@ -100,6 +117,11 @@ Subagent status handling:
 - **NEEDS_CONTEXT**: provide missing context or narrow the task.
 - **BLOCKED**: change something: more context, smaller task, different approach, or sequence it.
 
+Dependencies are sequential:
+
+- same-scope dependent tasks must be separate waves
+- independent tasks can be one `task` call with multiple `tasks[]` entries
+
 Never force a blocked agent to retry unchanged.
 
 ## Phase 4 — Review and Integrate
@@ -114,6 +136,16 @@ Check:
 - did one result invalidate another?
 - are there duplicated abstractions or inconsistent naming?
 - are there follow-up tasks that must now be sequenced?
+
+For large, production-impact slices, optionally dispatch one read-only task reviewer in a separate wave.
+
+Use local file handoff contracts and avoid external runtime script/prompt dependencies.
+
+- task brief file (`local://...`) with exact target files/symbols and constraints
+- implementation report file (`local://...` or `artifact://...`) with concrete findings and evidence
+- review package file (`local://...` or `artifact://...`) containing exact target/evidence and diff package for that task window
+
+Do not force reviewer dispatch for every small task.
 
 Spec compliance comes before code quality. First verify that the work matches the assignment; then review whether it is maintainable.
 
@@ -137,7 +169,7 @@ Final output must state:
 Stop and regroup if any of these appear:
 
 - agents need each other's unfinished outputs
-- multiple agents need to edit the same file
+- several agents need to edit the same file
 - assignment says “update all” or uses broad globs without file boundaries
 - subagent prompt depends on hidden conversation history
 - agent returns work outside its scope

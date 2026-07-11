@@ -48,6 +48,15 @@ Pressure does not relax the process. Pressure is when shortcut fixes do the most
 
 Create an agent-runnable pass/fail signal for the user-reported failure. The loop must reach the real failing path, not a nearby surrogate.
 
+Before moving to Phase 2, require a **one-command red/green completion contract** for every failure:
+
+- one command that reaches the reported failing path,
+- one fixed assertion over the exact symptom (error message, status code, value mismatch, or state diff),
+- that command and assertion must demonstrate the exact symptom as RED before any fix,
+- the same command with the same assertion must turn GREEN (pass) after the fix.
+
+For flaky failures, the command must also be pressure-capable: repeat the trigger enough to establish reproducible RED and record the reproduction rate before diagnosis.
+
 Prefer loops in this order:
 
 1. Failing unit, integration, or end-to-end test at the correct seam.
@@ -83,6 +92,18 @@ Capture evidence before moving on:
 - whether the failure matches the user-reported symptom
 - whether it reproduces consistently, or at what rate if flaky
 - recent changes: commits, dependency changes, config changes, data migrations, environment differences, deploys, feature flags
+
+After RED is confirmed, reduce the repro one axis at a time:
+
+1. input
+2. caller
+3. config
+4. data
+5. steps
+
+Rerun the same pressure command for each reduction and keep a step only if the exact symptom still reproduces.
+
+A minimized repro is for narrowing hypotheses only. Keep the final proof contract on the original, unminimized scenario; use the same assertion and confirm GREEN after the fix.
 
 Read errors and warnings completely. Stack traces, codes, and line numbers are often the shortest path to the root cause.
 
@@ -192,7 +213,7 @@ Then:
 2. Make the smallest source-level change that addresses the confirmed root cause.
 3. Do not bundle unrelated refactors, cleanup, retries, fallbacks, broad validation, or behavior changes.
 4. If invalid data crosses multiple layers, add defense-in-depth only after the source is known: boundary validation, domain invariant, environment guard, or permanent observability must each catch a distinct failure mode.
-5. Re-run the original unminimized feedback loop.
+5. Re-run the original unminimized feedback loop with the same assertion used in the RED pressure step and confirm GREEN.
 
 Use `references/defense-in-depth.md` before adding layered validation, guards, or permanent observability.
 

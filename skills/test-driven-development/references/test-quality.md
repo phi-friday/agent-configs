@@ -89,6 +89,50 @@ Cannot find module '../submit-form'
 
 Fix setup/import/type errors until the test fails for the behavior reason.
 
+## Tautological Test Risk
+
+Red flags for tautologies:
+
+- The assertion only compares values derived from test setup, fixtures, or mock output.
+- The expected value is produced by the same logic as production.
+- The assertion only proves the test fixture or mock data exists.
+
+These tests can pass while a plausible bug slips through.
+
+- Can you describe a single realistic production bug that this test would catch and the mutation that causes it?
+- If no, redesign the test seam (usually the public interface) before writing the test.
+- Define that mutation while fixture/mock/setup inputs stay constant; if the test still passes, it is not ready for RED.
+- If the assertion only checks setup/fixture/mock-derived values, treat it as a tautology risk.
+
+Examples:
+
+Bad (likely tautology):
+
+```ts
+test('normalizes display name', async () => {
+  const input = '  alice  ';
+  const expected = normalize(input); // same logic as production
+
+  const actual = normalize(input);
+
+  expect(actual).toBe(expected);
+});
+```
+
+Good:
+
+```ts
+test('trims user name before saving user', async () => {
+  const created = await createUser({ name: '  alice  ' });
+
+  const fetched = await getUser(created.id);
+
+  expect(fetched.name).toBe('alice');
+});
+```
+
+The good test fails if persistence, save, or normalization behavior changes incorrectly.
+
 ## Public Interface Rule
 
 If a test can only be written by reaching into internals, treat that as design feedback:

@@ -21,15 +21,20 @@ For very small mechanical changes, review can be skipped if verification is stro
 ```md
 # Review Target
 
-<Files, diff range, PR, or artifact to review.>
+<Exact one target is required. Choose one:
+- `[BASE]..[HEAD]` commit range (for scoped repo history)
+- GitHub PR (`https://github.com/<owner>/<repo>/pull/<n>` or `owner/repo#n`)
+- explicit file set (paths, globs, or hunks)
+- artifact URI
+>
 
 # What Changed
 
-<Brief factual summary.>
+<Brief factual summary of what changed in the target.>
 
 # Requirements
 
-<Plan, acceptance criteria, issue, or user request.>
+<Plan, acceptance criteria, issue, or user request — self-contained; do not depend on hidden context.>
 
 # Review Focus
 
@@ -39,9 +44,23 @@ For very small mechanical changes, review can be skipped if verification is stro
 
 <Uncertainty, tricky files, compatibility concerns, skipped checks.>
 
+# Reviewer Contract
+
+- Reviewer is read-only by default.
+- Do not infer context from hidden conversations or prior chat.
+- Report only against the provided target and request text.
+
 # Requested Output
 
-Return:
+For each finding, return:
+
+- Severity (`critical` | `important` | `minor`)
+- Location: `file:line` or artifact evidence
+- Why it is a risk
+- Required action
+
+Also include strengths and final assessment:
+
 - Strengths
 - Critical issues
 - Important issues
@@ -59,6 +78,7 @@ Return:
 - security or data-loss risk
 - tests verify real behavior
 - no over-broad or speculative changes
+- findings include severity, `file/line` evidence, risk, and required action
 
 ## Acting On Review
 
@@ -72,8 +92,9 @@ Review feedback is not automatically correct. Evaluate it using `review-feedback
 
 Avoid:
 
-- “please review” with no requirements
+- “please review” with no exact target
 - asking reviewer to infer context from hidden conversation
-- no diff/range/files
+- no self-contained requirements
 - no review focus
+- no known risks / compatibility notes
 - asking for approval after already declaring done

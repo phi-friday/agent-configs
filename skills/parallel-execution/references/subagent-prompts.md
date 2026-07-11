@@ -13,10 +13,37 @@ Each prompt must include:
 - expected output format
 - whether edits are allowed or read-only
 - instruction to skip project-wide gates, formatters, and final verification
+- file handoff for large prompts (`local://...`) to avoid transcript duplication
 
 Do not ask a subagent to infer its task from a large plan. Paste the exact slice.
 
+For production-like larger slices, hand off large prompts as files:
+
+- task brief file (`local://...`) for implementers, with exact target and constraints
+- implementation report file (`local://...` or `artifact://...`) for status and findings, with concrete evidence
+- review artifact or diff-evidence package file (`local://...` or `artifact://...`) for reviewer assignments, with exact target/evidence
+
+## Batch Context Template
+
+The shared `task.context` uses exactly these top-level headings:
+
+```md
+# Goal
+
+<What the whole batch accomplishes.>
+
+# Constraints
+
+<Rules and decisions shared by every task.>
+
+# Contract
+
+<Shared interfaces, boundaries, and output expectations.>
+```
+
 ## Implementation Assignment Template
+
+Every `tasks[].assignment` uses exactly the required `# Target`, `# Change`, and `# Acceptance` top-level headings:
 
 ```md
 # Target
@@ -25,20 +52,17 @@ Do not ask a subagent to infer its task from a large plan. Paste the exact slice
 
 # Change
 
-<Step-by-step change. Existing patterns to follow. Boundaries not to cross.>
-
-# Constraints
+<Step-by-step change, relevant context, existing patterns, and boundaries.>
 
 - Do not touch <files/areas>.
 - Do not run project-wide build/test/lint or formatters.
 - Do not perform final verification; report suggested checks instead.
 - Ask if requirements are unclear instead of guessing.
+- Use local file handoff for large requirement/report artifacts.
 
 # Acceptance
 
 <Observable result the controller can inspect.>
-
-# Report
 
 Return:
 - Status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
@@ -51,21 +75,19 @@ Return:
 ## Investigation Assignment Template
 
 ```md
-# Question
+# Target
 
-<Specific question to answer.>
+<Exact files/subsystem/logs/artifacts to inspect. Mark the task read-only and state explicit non-goals.>
 
-# Scope
+# Change
 
-<Files/subsystem/logs/tests to inspect.>
-
-# Constraints
+<Specific question to answer and context required to answer it.>
 
 - Read-only: do not edit files.
 - Do not run project-wide gates.
 - Do not broaden beyond this subsystem unless required to answer the question.
 
-# Report
+# Acceptance
 
 Return:
 - Answer
@@ -77,30 +99,27 @@ Return:
 ## Review Assignment Template
 
 ```md
-# Review Target
+# Target
 
-<Files, diff, artifact, or implementation report.>
+<Exact files, diff, artifact, or implementation report. State explicit non-goals.>
 
-# Review Goal
+# Change
 
-<Spec compliance | code quality | integration risk | test quality.>
+Read-only review. Include the self-contained review goal, requirements, criteria, focus, known risks, and compatibility constraints.
 
-# Criteria
-
-<List specific requirements or quality bars.>
-
-# Constraints
-
-- Read-only unless explicitly asked to patch.
+- Do not edit unless explicitly asked to patch in a later task.
 - Do not run project-wide gates.
+- Keep transcript size low: point to `local://...` or `artifact://...` for larger context.
 
-# Report
+# Acceptance
 
-Return:
-- Approved or issues found
-- Critical / Important / Minor issues
-- Evidence with file paths and line references
-- Required fixes
+For every actionable finding, return:
+- Severity: Critical | Important | Minor
+- Exact `file:line` or artifact evidence
+- Concrete risk
+- Required action
+
+Also return strengths and assessment: approved | with fixes | not ready.
 ```
 
 ## Status Meanings

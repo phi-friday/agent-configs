@@ -115,15 +115,25 @@ Request review for:
 - work produced by subagents that affects production code
 - anything that will be merged or handed off as complete
 
-A review request must include:
+A review request summary must include:
 
+- exact review target (one of the following):
+  - `[BASE]..[HEAD]` commit range
+  - GitHub PR (`https://github.com/<owner>/<repo>/pull/<n>` or `owner/repo#n`)
+  - explicit file set (paths, globs, or hunks)
+  - artifact URI
 - what changed
 - requirements or plan
-- diff/range or files to inspect
-- what kind of review is needed
+- review focus
 - known risks or areas of uncertainty
+- reviewer contract:
+  - default read-only reviewer
+  - no inference from hidden conversations
+  - requirements, focus, and risks must be self-contained in the request itself
+- required finding contract:
+  - each finding must include severity, `file:line` or artifact evidence, risk, and required action
 
-Use `references/code-review-request.md` for the review request template.
+Use `references/code-review-request.md` for the review request template and evidence format.
 
 ## Phase 5 — Handle Review Feedback
 

@@ -45,6 +45,11 @@ parallel-execution/
 
 subagent는 자기 task를 수행하고 보고한다. 통합과 최종 검증은 controller가 수행한다.
 
+## Contract note
+
+- 독립 병렬 요청은 하나의 `task` 배치에서 여러 `tasks[]`를 사용한다.
+- 큰 slice의 리뷰는 필요할 때만 read-only reviewer를 사용하며, task brief, implementer report, review package(정확한 target/evidence 포함)를 `local://...`/`artifact://...`으로 전달한다.
+
 ## 레퍼런스 출처
 
 이 스킬은 다음 레퍼런스를 바탕으로 정리했다.
@@ -58,8 +63,9 @@ subagent는 자기 task를 수행하고 보고한다. 통합과 최종 검증은
 
 - `references/obra/superpowers/skills/subagent-driven-development/SKILL.md`
 - `references/obra/superpowers/skills/subagent-driven-development/implementer-prompt.md`
-- `references/obra/superpowers/skills/subagent-driven-development/spec-reviewer-prompt.md`
-- `references/obra/superpowers/skills/subagent-driven-development/code-quality-reviewer-prompt.md`
+- `references/obra/superpowers/skills/subagent-driven-development/task-reviewer-prompt.md`
+- `references/obra/superpowers/skills/subagent-driven-development/scripts/task-brief`
+- `references/obra/superpowers/skills/subagent-driven-development/scripts/review-package`
 - `references/obra/superpowers/skills/dispatching-parallel-agents/SKILL.md`
 
 원본 저장소의 라이선스 고지는 루트 `NOTICE.md`를 따른다.

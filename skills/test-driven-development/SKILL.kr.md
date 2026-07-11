@@ -60,8 +60,11 @@ public interface가 불명확하면 테스트가 사용할 가장 작은 interfa
 
 interface가 쓰기 어려워 테스트도 어렵다면 `references/interface-design.md`를 사용한다.
 
-## Phase 1 — RED: Write One Failing Test
+- 동작이 실제 caller 경로에서 관측 가능한 seam이 없다면 RED로 넘어가지 말고 인터페이스를 다시 설계한다.
+- RED 시작 전 correct-seam gate를 통과한다: 이 테스트가 막아야 할 실제 가능성이 있는 production 버그 하나를 이름 붙이고, 같은 fixture/mock/setup 조건에서 그 동작을 유발하는 최소 변경(변이)을 정의한다.
+- 그 변이에도 테스트가 통과하거나(또는 고정된 fixture/mock/setup 값만 재검증한다면) tautology 위험이다. RED 전 caller-facing/public interface seam을 다시 설계한다.
 
+## Phase 1 — RED: Write One Failing Test
 public interface를 통해 동작 하나에 대한 최소 테스트 하나를 쓴다.
 
 규칙:
@@ -146,11 +149,12 @@ RED test 3 → GREEN code 3 → REFACTOR
 
 - 모든 새 behavior에 test가 있다
 - 각 test는 구현 전에 예상한 이유로 실패하는 것을 봤다
-- test는 private implementation이 아니라 public behavior를 실행한다
+- 각 test는 최소 하나의 현실적인 production 버그 또는 실제 가능한 mutation이 주입되면 실패한다
+- 각 test는 실질적 behavioral failure로 실패해야 하며, fixture/mock/setup 값만 비교해 통과하는 tautology가 아니어야 한다
 - mock은 system boundary에만 있고 assertion 대상이 아니다
 - behavior와 관련된 edge case와 error path가 커버됐다
 - production code에 test-only method나 test-only branch가 없다
-- temporary scaffolding이 제거됐다
+- 모든 임시 scaffolding이 제거됐다
 - 직접 영향받는 테스트가 통과한다
 
 ## Red Flags
@@ -168,5 +172,9 @@ RED test 3 → GREEN code 3 → REFACTOR
 - red 상태에서 refactor
 - “혹시 몰라” option이나 branch 추가
 - 구현 없이 test를 batch로 먼저 작성
+- 현실적인 production 버그를 주입해도 test가 통과하면 안 된다
+- mock이 반환한 값 그대로 assert 하는 경우
+- production 계산을 테스트 안에 복제해 검증하는 경우
+- fixture를 assert 해 fixture 자체를 검증하는 경우
 
 이것들은 style 문제가 아니다. 테스트가 behavior를 보호하지 못하게 되는 방식이다.

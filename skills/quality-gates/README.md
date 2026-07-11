@@ -66,7 +66,7 @@ Review this skill again when these files change:
 
 Published against these submodule commits.
 
-- `references/obra/superpowers`: `6fd4507659784c351abbd2bc264c7162cfd386dc`
+- `references/obra/superpowers`: `d884ae04edebef577e82ff7c4e143debd0bbec99`
 <!-- publish_skills:reference-commits:end -->
 
 License notices for the original repositories are covered by the root `NOTICE.md`.
