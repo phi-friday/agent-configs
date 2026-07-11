@@ -54,19 +54,27 @@ root-cause-debugging/
 
 root cause를 확인하기 전에는 retry, timeout, fallback, warning suppression, broad refactor를 추가하지 않는다.
 
+## 실패 재현 계약
+
+- 정밀 증상을 타겟으로 고정 assertion 하나를 갖는 명령 하나를 사용한다.
+- 동일한 명령과 assertion으로 진단 전에 정확한 증상이 RED임을 확인한다.
+- 동일한 명령과 동일 assertion으로 수정 후 GREEN 통과를 확인한다.
+- flaky 실패에서는 재현 가능한 RED를 만들고 재현율을 기록할 만큼 명령을 pressure-capable하게 만든다.
+- minimized repro는 가설 검증 전용으로만 사용하고, 최종 증명은 원래의 unminimized 시나리오에서 한다.
+
 ## 레퍼런스 출처
 
 이 스킬은 다음 레퍼런스를 바탕으로 정리했다.
 
-- `mattpocock/skills/skills/engineering/diagnose`
+- `mattpocock/skills/skills/engineering/diagnosing-bugs`
 - `obra/superpowers/skills/systematic-debugging`
 
 ## 참고한 파일
 
 다음 파일이 업데이트되면 이 스킬도 다시 검토한다.
 
-- `references/mattpocock/skills/skills/engineering/diagnose/SKILL.md`
-- `references/mattpocock/skills/skills/engineering/diagnose/scripts/hitl-loop.template.sh`
+- `references/mattpocock/skills/skills/engineering/diagnosing-bugs/SKILL.md`
+- `references/mattpocock/skills/skills/engineering/diagnosing-bugs/scripts/hitl-loop.template.sh`
 - `references/obra/superpowers/skills/systematic-debugging/SKILL.md`
 - `references/obra/superpowers/skills/systematic-debugging/root-cause-tracing.md`
 - `references/obra/superpowers/skills/systematic-debugging/defense-in-depth.md`

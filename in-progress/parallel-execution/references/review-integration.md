@@ -32,6 +32,18 @@ Only after this passes, ask:
 - Are tests behavior-focused?
 - Did parallel work create duplication or inconsistent patterns?
 
+## File-Based Large-Slice Review
+
+For larger or higher-risk slices, use one read-only task reviewer with local handoff.
+
+Use the Review Assignment template in `references/subagent-prompts.md` and pass:
+
+- task brief file (`local://...`) with exact target and scope
+- implementation report file (`local://...` or `artifact://...`) with concrete findings
+- review package file (`local://...` or `artifact://...`) with exact target/evidence and diff/evidence bundle
+
+Do not force this flow for every small task.
+
 ## Conflict Checks
 
 Check for:

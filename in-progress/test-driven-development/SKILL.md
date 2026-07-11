@@ -60,6 +60,10 @@ If the public interface is unclear, design the smallest interface the test shoul
 
 Use `references/interface-design.md` when the test is hard to write because the interface is hard to use.
 
+- If test design exposes no caller-observable seam for the behavior, stop and redesign the interface before proceeding to RED.
+- Before RED, run the correct-seam gate: name one plausible production bug this test must catch and define the smallest realistic mutation that triggers it (keeping fixture/mock/setup constant).
+- If that mutation still passes, or the test only re-checks fixed fixture/mock/setup output, this is a tautology risk. Redesign the seam to a caller-visible/public interface before RED.
+
 ## Phase 1 — RED: Write One Failing Test
 
 Write one minimal test for one behavior through the public interface.
@@ -146,7 +150,8 @@ Before declaring the work complete:
 
 - every new behavior has a test
 - each test was seen failing for the expected reason before implementation
-- tests exercise public behavior, not private implementation
+- each test fails when at least one plausible production bug or realistic mutation is introduced
+- each test is not a tautology (it fails for behavior, not because it only checks fixture/mock/setup-derived values)
 - mocks are only at system boundaries and are not the subject of assertions
 - edge cases and error paths relevant to the behavior are covered
 - production code contains no test-only methods or test-only branches
@@ -168,5 +173,9 @@ If any of these happen, stop and return to RED:
 - refactoring while red
 - adding “just in case” options or branches
 - writing a batch of tests before any implementation
+- test still passes when a realistic production mutation is introduced
+- asserting a mock’s return value instead of caller-visible behavior
+- mirroring production calculations in assertions
+- asserting fixture structure/value to prove the test fixture itself
 
 These are not style issues. They are how tests stop protecting behavior.

@@ -115,15 +115,25 @@ Targeted parser tests pass. Full suite was not run.
 - production code에 영향을 주는 subagent output
 - merge되거나 complete로 handoff될 work
 
-review request에는 포함한다.
+review request에는 아래를 포함한다.
 
-- 무엇이 바뀌었는가
+- 정확한 review target (아래 중 하나):
+  - `[BASE]..[HEAD]` commit 범위
+  - GitHub PR (`https://github.com/<owner>/<repo>/pull/<n>` 또는 `owner/repo#n`)
+  - 명시적 파일 집합(경로, glob, 혹은 hunk)
+  - artifact URI
+- 무엇이 바뀌었는지
 - requirements 또는 plan
-- inspect할 diff/range 또는 files
-- 필요한 review 종류
+- review focus
 - known risks 또는 uncertainty
+- reviewer 계약:
+  - 기본은 read-only
+  - hidden conversation에서 context 추론 금지
+  - requirements, focus, risks를 요청 본문 안에 self-contained하게 전달
+- finding 결과 형식 요구:
+  - 각 finding에 severity, `file:line` 또는 artifact 증거, risk, required action을 모두 포함
 
-review request template은 `references/code-review-request.md`를 사용한다.
+review request template과 finding/증거 형식은 `references/code-review-request.md`를 사용한다.
 
 ## Phase 5 — Handle Review Feedback
 

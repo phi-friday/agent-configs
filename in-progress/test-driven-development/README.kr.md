@@ -62,10 +62,13 @@ production code를 쓰기 전에 실패하는 behavior test를 먼저 보고, gr
 - `references/mattpocock/skills/skills/engineering/tdd/SKILL.md`
 - `references/mattpocock/skills/skills/engineering/tdd/tests.md`
 - `references/mattpocock/skills/skills/engineering/tdd/mocking.md`
-- `references/mattpocock/skills/skills/engineering/tdd/interface-design.md`
-- `references/mattpocock/skills/skills/engineering/tdd/deep-modules.md`
-- `references/mattpocock/skills/skills/engineering/tdd/refactoring.md`
 - `references/obra/superpowers/skills/test-driven-development/SKILL.md`
 - `references/obra/superpowers/skills/test-driven-development/testing-anti-patterns.md`
+
+과거 upstream 경로(현재 소스는 아님, 이력 저장용 `694fa303...`):
+
+- `interface-design.md`
+- `deep-modules.md`
+- `refactoring.md`
 
 원본 저장소의 라이선스 고지는 루트 `NOTICE.md`를 따른다.

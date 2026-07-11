@@ -48,6 +48,15 @@ ROOT CAUSE 전에 FIX 없음.
 
 사용자가 보고한 실패에 대한 agent-runnable pass/fail signal을 만든다. loop는 근처 surrogate가 아니라 실제 failing path에 도달해야 한다.
 
+Phase 2로 넘어가기 전에 모든 failure에 **단일 명령 red/green 완료 기준**을 요구한다:
+
+- 실제 실패 경로를 호출하는 한 명령
+- 사용자 증상(에러 텍스트, 상태 코드, 값 불일치, 상태 차이)을 assert하는 고정된 단일 assertion
+- 수정 전에는 동일한 명령과 assertion으로 정확한 증상이 RED임을 확인
+- 수정 후에는 동일한 명령과 동일한 assertion이 GREEN(통과)으로 바뀌는지 확인
+
+flaky 실패에서는 이 명령이 pressure-capable해야 한다. trigger를 충분히 반복해 재현 가능한 RED를 만들고 진단 전에 재현율을 기록한다.
+
 선호 순서:
 
 1. correct seam의 실패 unit, integration, end-to-end test.
@@ -83,6 +92,19 @@ loop를 실행한다. 실패가 나타나는 것을 본다.
 - 실패가 사용자가 보고한 증상과 같은지
 - 안정적으로 재현되는지, flaky라면 어느 정도 비율로 재현되는지
 - recent changes: commits, dependency changes, config changes, data migrations, environment differences, deploys, feature flags
+
+RED가 확인되면 재현을 다음 축으로 하나씩 줄여가며 축소한다:
+
+1. input
+2. caller
+3. config
+4. data
+5. steps
+
+각 축을 줄일 때마다 동일한 pressure command를 재실행해 정확한 증상이 여전히 재현되는지 확인한다.
+
+축소한 repro는 가설 공간 축소용이다. 최종 증명은 항상 원래 **unminimized** 시나리오를 기준으로 수행한다.
+동일한 RED assertion으로 동일한 명령을 재실행해 GREEN 통과를 확인한다.
 
 error와 warning을 끝까지 읽는다. stack trace, code, line number가 root cause까지의 가장 짧은 경로일 때가 많다.
 
@@ -192,7 +214,7 @@ correct seam이 없다면 그 사실을 문서화한다. architecture가 이 bug
 2. 확인된 root cause를 해결하는 가장 작은 source-level change를 만든다.
 3. 관련 없는 refactor, cleanup, retry, fallback, broad validation, behavior change를 묶지 않는다.
 4. invalid data가 여러 layer를 지나면 source를 안 뒤에만 defense-in-depth를 추가한다: boundary validation, domain invariant, environment guard, permanent observability는 각각 서로 다른 failure mode를 잡아야 한다.
-5. 원래의 unminimized feedback loop를 다시 실행한다.
+5. 원래의 unminimized feedback loop를 동일한 assertion으로 다시 실행해 GREEN 통과를 확인한다.
 
 layered validation, guard, permanent observability를 추가하기 전에는 `references/defense-in-depth.md`를 사용한다.
 

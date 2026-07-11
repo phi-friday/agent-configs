@@ -54,19 +54,27 @@ reproduce → observe → trace → hypothesize → instrument → fix root caus
 
 Do not add retries, timeouts, fallbacks, warning suppression, or broad refactors before confirming the root cause.
 
+## Failure Reproduction Contract
+
+- Use one command with a fixed assertion targeting the exact symptom.
+- The command and assertion must show that exact symptom as RED before diagnosis.
+- Reuse the same command and the same assertion to verify GREEN after a fix.
+- For flaky failures, make the command pressure-capable enough to establish reproducible RED and record the reproduction rate.
+- Use minimized repros for hypothesis work only; final proof must be the original unminimized scenario.
+
 ## Reference Sources
 
 This skill is based on these references:
 
-- `mattpocock/skills/skills/engineering/diagnose`
+- `mattpocock/skills/skills/engineering/diagnosing-bugs`
 - `obra/superpowers/skills/systematic-debugging`
 
 ## Reference Files
 
 Review this skill again when these files change:
 
-- `references/mattpocock/skills/skills/engineering/diagnose/SKILL.md`
-- `references/mattpocock/skills/skills/engineering/diagnose/scripts/hitl-loop.template.sh`
+- `references/mattpocock/skills/skills/engineering/diagnosing-bugs/SKILL.md`
+- `references/mattpocock/skills/skills/engineering/diagnosing-bugs/scripts/hitl-loop.template.sh`
 - `references/obra/superpowers/skills/systematic-debugging/SKILL.md`
 - `references/obra/superpowers/skills/systematic-debugging/root-cause-tracing.md`
 - `references/obra/superpowers/skills/systematic-debugging/defense-in-depth.md`

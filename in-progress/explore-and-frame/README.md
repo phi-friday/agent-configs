@@ -18,16 +18,16 @@ Its goal is not to “start building immediately.” Its goal is to clarify what
 This skill combines four reference roles into one exploration skill.
 
 ```text
-brainstorming        → questions and requirement clarification
-openspec-explore     → free-form exploration stance + strong visualization
-zoom-out             → mapping the existing code at a higher level
-to-prd               → compressing settled decisions into a PRD/decision frame
+brainstorming                       → questions and requirement clarification
+openspec-explore                    → free-form exploration stance + strong visualization
+historical zoom-out (removed)       → mapping the existing code at a higher level
+to-spec (formerly to-prd)           → compressing settled decisions into a PRD/decision frame
 
                 explore-and-frame
         explore → visualize → map context → compare options → frame decisions
 ```
 
-It does not copy `brainstorming`’s heavy approval procedure for every task, and it keeps the flexibility of `openspec-explore`’s exploration stance. To keep exploration from ending vaguely, it adds `zoom-out`’s code-context mapping and `to-prd`’s documentation frame.
+It does not copy `brainstorming`’s heavy approval procedure for every task, and it keeps the flexibility of `openspec-explore`’s exploration stance. To keep exploration from ending vaguely, it adds `historical zoom-out`’s code-context mapping and `to-spec`’s documentation frame.
 
 ## Elements Taken From Each Reference
 
@@ -75,7 +75,7 @@ Adaptations:
 - Only visualization and exploration patterns that work in general codebases and general work conversations remain.
 - “Update the OpenSpec artifact” is generalized into “offer to save a decision note or PRD.”
 
-### `mattpocock/skills` `zoom-out`
+### `mattpocock/skills` historical `zoom-out` (removed)
 
 Elements taken:
 
@@ -89,7 +89,7 @@ Adaptations:
 - This skill expands it into a `What To Investigate` section that makes code-exploration checks explicit.
 - It connects that exploration to later option comparison and PRD/decision framing instead of stopping at explanation.
 
-### `mattpocock/skills` `to-prd`
+### `mattpocock/skills` `to-spec` (formerly `to-prd`)
 
 Elements taken:
 
@@ -112,7 +112,7 @@ Adaptations:
    - openspec-explore handling of many entry points
 
 2. What To Investigate
-   - zoom-out code-context mapping
+   - historical zoom-out (removed) code-context mapping
    - openspec-explore codebase grounding
 
 3. Questions
@@ -128,7 +128,7 @@ Adaptations:
    - constraint-driven recommendation
 
 6. Framing The Result
-   - to-prd PRD structure
+   - to-spec (formerly to-prd) PRD structure
    - added decision frame for smaller tasks
 
 7. Capturing Decisions
@@ -156,8 +156,8 @@ Review this skill again when these files change:
 - `references/obra/superpowers/skills/brainstorming/spec-document-reviewer-prompt.md`
 - `references/Fission-AI/OpenSpec/src/core/templates/workflows/explore.ts`
 - `references/Fission-AI/OpenSpec/openspec/explorations/explore-workflow-ux.md`
-- `references/mattpocock/skills/skills/engineering/zoom-out/SKILL.md`
-- `references/mattpocock/skills/skills/engineering/to-prd/SKILL.md`
+- `references/mattpocock/skills/skills/engineering/to-spec/SKILL.md`
+- Historical upstream source for the removed `zoom-out` concept: https://github.com/mattpocock/skills/blob/694fa30311e02c2639942308513555e61ee84a6f/skills/engineering/zoom-out/SKILL.md (commit-pinned historical reference, not a current replacement)
 
 ## License Note
 

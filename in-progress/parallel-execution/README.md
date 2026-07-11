@@ -45,6 +45,11 @@ decompose → self-contained dispatch → review results → integrate → centr
 
 Subagents perform and report on their own tasks. The controller performs integration and final verification.
 
+## Contract note
+
+- Independent parallelization requests are handled as one `task` batch with multiple `tasks[]` entries.
+- Large review slices may optionally use a read-only reviewer; for high-impact slices, pass file-based handoff artifacts (`local://...` / `artifact://...`) containing task brief, implementation report, and review package with exact target/evidence. Small tasks are not forced into per-task review.
+
 ## Reference Sources
 
 This skill is based on these references:
@@ -58,8 +63,9 @@ Review this skill again when these files change:
 
 - `references/obra/superpowers/skills/subagent-driven-development/SKILL.md`
 - `references/obra/superpowers/skills/subagent-driven-development/implementer-prompt.md`
-- `references/obra/superpowers/skills/subagent-driven-development/spec-reviewer-prompt.md`
-- `references/obra/superpowers/skills/subagent-driven-development/code-quality-reviewer-prompt.md`
+- `references/obra/superpowers/skills/subagent-driven-development/task-reviewer-prompt.md`
+- `references/obra/superpowers/skills/subagent-driven-development/scripts/task-brief`
+- `references/obra/superpowers/skills/subagent-driven-development/scripts/review-package`
 - `references/obra/superpowers/skills/dispatching-parallel-agents/SKILL.md`
 
 License notices for the original repositories are covered by the root `NOTICE.md`.

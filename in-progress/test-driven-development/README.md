@@ -62,10 +62,13 @@ Review this skill again when these files change:
 - `references/mattpocock/skills/skills/engineering/tdd/SKILL.md`
 - `references/mattpocock/skills/skills/engineering/tdd/tests.md`
 - `references/mattpocock/skills/skills/engineering/tdd/mocking.md`
-- `references/mattpocock/skills/skills/engineering/tdd/interface-design.md`
-- `references/mattpocock/skills/skills/engineering/tdd/deep-modules.md`
-- `references/mattpocock/skills/skills/engineering/tdd/refactoring.md`
 - `references/obra/superpowers/skills/test-driven-development/SKILL.md`
 - `references/obra/superpowers/skills/test-driven-development/testing-anti-patterns.md`
+
+Historical upstream paths (not current source, kept for provenance only, commit `694fa303...`):
+
+- `interface-design.md`
+- `deep-modules.md`
+- `refactoring.md`
 
 License notices for the original repositories are covered by the root `NOTICE.md`.

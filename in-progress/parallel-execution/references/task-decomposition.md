@@ -55,11 +55,11 @@ Tasks can coordinate through a small explicit contract.
 Tasks only need final integration after completion.
 ```
 
-## Batch Size
+## Fan-Out
 
-Prefer 2–5 focused agents.
+Dispatch the full set of independent tasks together, up to the tool's concurrency boundary. Do not serialize independent work merely to keep a batch small.
 
-Too many agents increase integration cost and conflict risk. If the batch is larger, group tasks by subsystem and dispatch in waves.
+Control integration risk with narrow assignments, explicit ownership, and the pre-flight conflict gate. Split into later waves only for real dependencies, shared contracts, or work beyond the concurrency boundary.
 
 ## Task Card Shape
 
