@@ -1,192 +1,160 @@
 # Intent Reconstruction
 
-Reconstruct what each change was trying to preserve before deciding what text survives.
+Reconstruct what each change preserves before choosing surviving text.
 
-## Core Rule
+## Core rule
 
 ```text
-source evidence → side intent → compatibility decision → minimal resolution → observable proof
+source evidence → side intent → compatibility → minimal resolution → observable proof
 ```
 
-Conflict markers show overlapping text. They do not show why either side changed, whether one side supersedes the other, or whether behavior moved to another path.
+Conflict markers show overlapping text, not why it changed, whether one side supersedes the other, or whether behavior moved elsewhere.
 
-## Conflict Record
+## Conflict record
 
-Create a record for each path or independently meaningful hunk:
+Create one record per path or independently meaningful hunk:
 
 ```md
 ## <path>:<symbol-or-hunk>
 
 - Conflict type: content | add/add | modify/delete | rename/delete | rename/rename | binary | mode | submodule | generated | lockfile
 - Active operation and paused unit:
-- Base behavior:
+- Base behavior and unrelated same-path baseline:
 - Current-operation source and intent:
 - Competing source and intent:
 - Evidence:
 - Relationship: compatible | superseded | incompatible | uncertain
-- Proposed resolution:
-- Behavior deliberately retained:
-- Behavior deliberately removed and why:
+- Proposed transition and resolution:
+- Behavior retained:
+- Behavior removed and why:
 - Verification:
 ```
 
-For a multi-path rename or generated artifact, one record may link the related paths, but every unmerged index path must appear in the inventory.
+Separate pre-existing same-path content from conflict content. Do not assume interactive hunk staging can resolve an unmerged index; require the reviewed separation plan and stage-0 proof in [operation-state](operation-state.md). If safe separation cannot be shown, stop rather than stage the path. Post-state proof belongs in [verification-checklist](verification-checklist.md).
+Record operation metadata existence and the paused unit; do not infer activity from conflict markers or a computed metadata path.
 
-## Evidence Order
+## Evidence order
 
-Prefer the closest primary sources first:
+Prefer primary sources in this order:
 
-1. paused commit patch, parent, and message
-2. merge heads or selected/reverted commit
-3. base and available index stages
-4. for lockfile or generated conflicts, the authoritative manifest/schema/template/source data and tool configuration
-5. adjacent commits that introduced the competing code
-6. linked PR, issue, ticket, design decision, or migration note
-7. repository instructions and documented invariants
-8. current implementation, call sites, tests, and public behavior
+1. Paused commit patch, parent, and message.
+2. Merge heads or selected/reverted commit.
+3. Base and available index stages.
+4. For lockfiles/generated files: authoritative manifest, schema, template, source data, tool configuration.
+5. Adjacent commits introducing competing code.
+6. Linked PR, issue, ticket, design decision, or migration note.
+7. Repository instructions and invariants.
+8. Current implementation, callers, tests, and public behavior.
 
-A commit message alone is not proof when its patch, tests, or linked issue contradict it. Record uncertainty instead of smoothing over inconsistent evidence.
+A commit message alone is not proof when its patch, tests, or linked issue disagree. Record uncertainty rather than smoothing inconsistent evidence.
 
-## Operation Lenses
+### Marker-free or auto-resolved state
+
+Use this only when Git reports a conflict but markers are absent, content appears automatically resolved, or provenance affects the semantic decision:
+
+1. Inspect operation status and index stages; compare the working tree with base/current/competing stages and the paused patch.
+2. If needed, inspect `git rerere status`, `git rerere diff`, applicable `.gitattributes` driver entries, `merge.<driver>.driver`, and `merge.conflictStyle` (including config origins).
+3. Treat rerere, custom/union drivers, and conflict style as mechanism evidence, never intent evidence. Validate behavior against commits, callers, tests, and other primary sources.
+
+If the result cannot be explained and independently validated, classify it uncertain and stop.
+
+## Operation lenses
 
 ### Merge
 
-Ask:
-
-- What integration goal caused these histories to meet?
-- Which behaviors are independently required by each parent?
-- Did one parent intentionally remove or replace behavior from the other?
-- Can both intents coexist without duplicate execution or incompatible policy?
+Identify the integration goal, independently required behavior of each parent, intentional removals/replacements, and whether composition would duplicate effects or conflict with policy.
 
 ### Rebase
 
-Ask:
-
-- What exact delta did the paused commit introduce on its original parent?
-- How does the new base represent the same concept now?
-- Which parts of the paused delta still apply?
-- Am I accidentally using a later commit to explain the current one?
-
-The resolution should express the paused commit on the new base, not merge the whole old branch at once.
+Recover the exact paused delta on its selected parent(s); map it onto the new base and reject later commits as explanations for the current one. For `--rebase-merges`, identify the replayed merge and parent structure rather than assuming one parent.
 
 ### Cherry-pick
 
-Ask:
-
-- What independently useful delta is being selected?
-- Which current-branch behavior is unrelated and must remain?
-- Has the target branch already implemented the delta under another name or path?
-
-Do not convert a cherry-pick conflict into a broad branch merge.
+Select the useful delta, retain unrelated target behavior, and check whether it already exists. For a merge commit, require the recorded `-m` mainline parent from sequencer options or equivalent evidence before deriving the delta.
 
 ### Revert
 
-Ask:
+Identify the target's introduced behavior, intended inverse, and dependent later changes. For a merge commit, require the recorded `-m` mainline parent before deriving the inverse. Prove absence/restoration without undoing unrelated work; compilation alone is insufficient.
 
-- What behavior did the target commit introduce?
-- What is the intended inverse?
-- Which later changes depend on or reshape that behavior?
-- Does the proposed result actually undo the target without undoing unrelated later work?
-
-A revert resolution must prove the intended absence or restoration of behavior, not just compile.
-
-## Compatibility Decisions
+## Compatibility decisions
 
 ### Compatible
 
-Compose both intents when they are independent. For example, if one side adds token-expiration validation and the other adds audience validation, preserve both while respecting established ordering, errors, and return conventions.
-
-Watch for false composition:
-
-- duplicated side effects
-- the same validation running twice
-- contradictory defaults
-- route/order precedence changes
-- one branch's fallback masking the other's error
-- incompatible schema versions
+Compose independent intents while preserving ordering, errors, return conventions, and side-effect boundaries. Reject false composition when it duplicates effects or validation, contradicts defaults, changes route/order precedence, masks errors, or mixes incompatible schema versions.
 
 ### Superseded
 
-One representation can replace another only with evidence. Common signals:
+Replace a representation only with evidence: an intentional rename/migration, moved callers/tests, an explicit removal, or equivalent behavior already in the new base. Transplant still-valid intent before removing the obsolete form.
 
-- an intentional rename or migration
-- tests and callers moved to a replacement API
-- an issue explicitly removes obsolete behavior
-- the new base already implements the paused delta differently
+#### Empty or already-present sequencer step
 
-Transplant any still-valid intent before removing the obsolete representation.
+For rebase/cherry-pick/revert, compare the paused delta or inverse and selected parent with current behavior and focused evidence. Marker removal or rerere alone cannot prove redundancy.
+
+An evidence-backed no-op is a finding, **not skip authorization**:
+
+- Preserve intentional empty history only when operation policy and the user's explicit choice require it.
+- Drop the paused unit only after redundancy is proven and `skip` is explicitly authorized; finish scope does not include skip.
+- If redundancy is unproven or skipping risks loss, stop; do not skip or invent an empty commit.
 
 ### Incompatible
 
-When both policies cannot coexist, describe the actual choice:
+State the real alternatives and losses:
 
 ```md
 - Option A preserves <intent> but loses <behavior/risk>.
 - Option B preserves <intent> but loses <behavior/risk>.
-- Operation goal favors <option> because <source evidence>.
+- Operation goal favors <option> because <evidence>.
 - User decision required: yes/no and why.
 ```
 
-Do not create a hybrid policy unsupported by either change. If the operation goal and repository evidence do not settle the choice, use the user decision as the primary source.
+Never invent an unsupported hybrid. If evidence and operation goal do not decide, use the user's decision as the primary source.
 
 ### Uncertain
 
-Uncertainty is a valid state, not permission to guess. Name the missing artifact: commit, PR, issue, test expectation, generator, binary source, or product decision.
+Name the missing artifact—commit, PR, issue, test expectation, generator, binary source, or product decision—and stop rather than guess.
 
-## Common Conflict Shapes
+## Common conflict shapes
 
-### Rename/Delete or Modify/Delete
+### Rename/delete or modify/delete
 
-1. Trace whether the missing path was renamed, split, generated elsewhere, or intentionally removed.
-2. Read the deletion/rename source and the modification source.
-3. Find the replacement path and current callers.
-4. Transplant still-valid behavior to the replacement when compatible.
-5. Keep the obsolete path deleted when the move/removal is intentional.
-6. Verify both path topology and behavior.
+Trace whether the path was renamed, split, generated elsewhere, or intentionally removed; read both source changes; find replacement paths and callers; transplant compatible behavior; retain intentional deletion; verify topology and behavior. File existence alone does not establish intent.
 
-Choosing file existence alone loses intent.
+### Rename/rename
 
-### Rename/Rename
-
-Trace both destination choices, the commits that introduced them, and current references. Preserve one canonical path when both renames represent the same move, or both paths only when evidence shows an intentional split. Transplant compatible modifications before removing an obsolete destination, then verify path topology and callers.
+Trace both destinations, their introducing commits, and current references. Keep one canonical path when both renames represent one move, or both only with evidence of an intentional split. Transplant compatible modifications before removing an obsolete destination; verify paths and callers.
 
 ### Submodule
 
-Treat each gitlink stage as a reference to a specific submodule commit, not as ordinary directory content. Inspect the base/current/competing commit identities and their submodule history before choosing a gitlink. If preserving both intents requires creating a new commit inside the submodule, treat that as a separate repository/history mutation requiring explicit user scope. Verify that the selected commit exists, is reachable as the project expects, and preserves the superproject change.
+Each gitlink stage names a submodule commit, not directory content. Inspect base/current/competing identities and submodule history. A new submodule commit is a separate repository/history mutation requiring explicit scope. Verify the selected commit exists, is reachable as expected, and preserves the superproject change.
 
-### Same Function, Different Features
+### Same function, different features
 
-1. Identify the observable behavior introduced by each side.
-2. Check shared preconditions, ordering, error semantics, and side effects.
-3. Compose both if independent.
-4. Update callers/tests only when required to preserve those behaviors.
-5. Verify each behavior separately and together.
-
-Do not concatenate blocks mechanically.
+Identify each observable behavior; compare preconditions, ordering, errors, and effects; compose only independent features; change callers/tests only as required; verify each behavior alone and together. Never concatenate blocks mechanically.
 
 ### Lockfile
 
-Treat the dependency manifest and package-manager configuration as the sources. Resolve manifest intent first, then regenerate with the pinned tool. If regeneration changes unrelated dependencies or scripts, stop and inspect rather than accepting churn.
+Resolve dependency-manifest intent first using package-manager configuration as source, then regenerate with the pinned tool. Stop on unrelated dependency or script churn.
 
-### Generated File
+### Generated file
 
-Treat schemas, templates, source data, and generator version/configuration as the sources. Resolve those inputs, regenerate, and verify deterministic output. A generated header is evidence to find the source, not a guarantee the generator is available.
+Resolve schema/template/source data and generator version/configuration, regenerate, and verify deterministic output. A generated header points to a source; it does not prove the generator is available.
 
-### Binary Artifact
+Regeneration and package-manager commands are mutation boundaries, not read-only verification. Follow the baseline, authorization, isolation, hook/network/credential review, and fresh post-state procedure in [operation-state](operation-state.md) and [verification-checklist](verification-checklist.md). If effects exceed expected lockfile/generated outputs, stop; never automatically reset, clean, or roll back.
 
-Find its producing source, release asset, or generator. If neither side is inspectable and provenance cannot choose one, present the choice and impact. Never claim a semantic merge of bytes you could not inspect.
+### Binary artifact
 
-## Silent-Loss Review
+Find the producing source, release asset, or generator. If neither side is inspectable and provenance cannot decide, present choices and impact. Never claim a semantic byte merge you could not inspect.
 
-Before finalizing a record, ask:
+## Silent-loss review
 
-- Which observable behavior from side A survives?
-- Which observable behavior from side B survives?
-- If behavior was removed, which source proves removal is intentional?
+Before finalizing, answer:
+
+- Which observable behavior from each side survives?
+- What proves any removal is intentional?
 - Did a rename hide a modification?
 - Did a generator or lockfile conceal unresolved source intent?
-- Did rebase resolution accidentally absorb a later commit?
-- Did conflict cleanup introduce new policy or unrelated refactoring?
-- Which focused check would fail if either retained intent were missing?
+- Did rebase absorb a later commit?
+- Did cleanup add policy or unrelated refactoring?
+- Which focused check would fail if retained intent were missing?
 
-A rationale is complete only when these answers connect to evidence and verification.
+A complete rationale connects each answer to evidence, choice, authorization, and verification. Semantic no-op, marker-free content, and generated output do not by themselves prove authorized mutation or verified behavior.

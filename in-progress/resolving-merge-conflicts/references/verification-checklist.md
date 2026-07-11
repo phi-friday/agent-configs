@@ -1,175 +1,184 @@
 # Verification Checklist
 
-Prove four distinct layers: working-tree content, index state, intended behavior, and operation state.
+Prove four layers separately: working-tree content, index state, intended behavior, and operation state.
 
-## Core Rule
+## Core rule
 
 ```text
 marker-free ≠ staged ≠ behaviorally correct ≠ operation complete
 ```
 
-Match every completion claim to the layer actually observed.
+Match each claim to its layer and observed evidence. A clean worktree is not success if it was not clean at baseline.
 
-## Layer 1 — Working-Tree Resolution
+## Baseline commands — define once, reuse fresh
 
-Run before staging is authorized.
+Create one immutable full baseline before editing:
 
-### Conflict coverage
+```sh
+git status --short
+git status
+git rev-parse HEAD
+git symbolic-ref --quiet HEAD
+git ls-files -s
+git ls-files --others --exclude-standard
+git diff --name-only --diff-filter=U
+git ls-files --unmerged
+git diff --binary --no-ext-diff --unified=0
+git diff --cached --binary --no-ext-diff --unified=0
+git diff --binary --no-ext-diff --unified=0 -- <path>
+git diff --cached --binary --no-ext-diff --unified=0 -- <path>
+git show :1:<path>
+git show :2:<path>
+git show :3:<path>
+git rev-parse --git-path MERGE_HEAD
+git rev-parse --git-path REBASE_HEAD
+git rev-parse --git-path CHERRY_PICK_HEAD
+git rev-parse --git-path REVERT_HEAD
+git rev-parse --git-path MERGE_AUTOSTASH
+git rev-parse --git-path rebase-merge
+git rev-parse --git-path rebase-apply
+git rev-parse --git-path sequencer
+git rev-parse --verify --quiet refs/stash
+git reflog show --format=%H refs/stash
+```
 
-- Every path from the original unmerged inventory has a resolution record.
-- Every text conflict block is removed from the intended working-tree result.
-- Modify/delete, rename/delete, add/add, binary, mode, and submodule conflicts were inspected even if no marker existed.
-- Related replacement paths, source manifests, schemas, templates, and generator inputs were included where required.
+Inspect each metadata/control path for existence and contents. Record relevant branch/ref identities, index stages, and every affected path's mode/content or hash. Hash relevant untracked, binary, and scoped ignored files with a file-aware tool or `git hash-object -- <path>` without exposing secret content.
 
-### Semantic review
+After an ordinary edit, use a **compact refresh**: status, unmerged index, operation metadata, and diffs/hashes only for paths changed since the previous snapshot. Before and after staging, a side-effectful command, or a transition, use a **full gate refresh** of all affected tracked/untracked/ignored content plus HEAD/refs/index/stash/autostash/control metadata. Stages or refs may be absent; record absence instead of inferring intent.
 
-- Each side's intended behavior is preserved, deliberately superseded, or reported as an unresolved tradeoff.
-- No blanket side selection discarded unrelated hunks.
-- No unrelated refactor, formatting sweep, dependency change, or behavior was introduced.
-- Pre-existing staged, unstaged, and untracked work remains unchanged.
+## Layer 1 — Working-tree resolution
 
-### Syntax and source-derived artifacts
+Run before staging authorization.
 
-- Touched source parses or compiles at the narrowest correct seam.
-- Imports, types, file modes, and path references are coherent.
-- Generated output was produced from resolved source inputs with the repository's existing generator.
-- Lockfiles were produced from resolved manifests with the pinned package manager when regeneration was available.
-- A second generation/check does not reveal unexplained nondeterminism or unrelated churn.
+### Coverage and marker triage
 
-At this layer the index can still report unmerged paths. Say:
+- Record a resolution for every original unmerged path (including marker-free paths) and every meaningful hunk.
+- Inspect modify/delete, rename/delete, rename/rename, add/add, binary, mode, and submodule conflicts; include related replacements, manifests, schemas, templates, and generator inputs when required by intent.
+
+Use these read-only checks; reuse baseline inventory commands:
+
+```sh
+git status --porcelain=v2
+git diff --check
+git grep -n -I -E '^(<<<<<<<|=======|>>>>>>>)' -- .
+git grep --no-index -n -I -E '^(<<<<<<<|=======|>>>>>>>)' -- <path>
+```
+
+Marker search is not proof: it searches tracked text; can produce false positives in docs/tests/templates/escaped examples/generated output; and can miss binary, modify/delete, rename, mode, submodule, out-of-scope, or nonstandard-style conflicts. Inspect reported lines and compare the complete unmerged inventory; marker absence never substitutes for inventory.
+
+### Content and semantic review
+
+Record each side as preserved, deliberately superseded, or an unresolved tradeoff. No blanket side selection, unrelated refactor/formatting, dependency change, or lost baseline path/hunk. The index may remain unmerged here. Valid claim:
 
 ```text
 Working-tree resolution verified; Git index remains unmerged because staging was not authorized.
 ```
 
-Do not say the Git conflict is fully resolved.
+Do not call the Git conflict fully resolved.
 
-## Layer 2 — Index Resolution
+### Same-path unrelated edits — staging gate
 
-Run only after explicit staging authorization.
+Path identity is not hunk identity. For a conflicted path with unrelated work:
 
-- Stage exact resolution paths and intended deletions/renames.
-- Inspect the staged diff, not only the working-tree diff.
-- Confirm no unrelated path or pre-existing change was captured.
-- Confirm the unmerged index is empty.
-- Confirm staged content still contains the verified resolution.
-- Run whitespace/patch checks appropriate to the repository.
+- Never use `git add <path>`, `git add -A`, or another path-wide staging operation.
+- Do not treat `git add -p` as a resolution method; it may report `needs merge` while leaving index stages 1–3 unchanged.
+- Proceed only with an explicit, reviewed separation plan that stages the exact stage-0 resolution, keeps unrelated content outside the index, and proves both staged and working-tree diffs against baseline.
+- If that proof is unavailable, stop before staging/continuation and report the overlap. If unrelated content was staged, stop; never automatically reset, clean, checkout, stash, or run `git restore --staged` without explicit correction scope.
 
-If any unmerged entry remains, the conflict is not recorded as resolved. If unrelated content was staged, correct the index without discarding the working tree.
+## Layer 2 — Index resolution
 
-Valid claim:
+Run only after explicit authorization and only for its exact scope.
+
+- Stage the exact resolution and intended deletions/renames. For same-path unrelated work, use only the reviewed Layer 1 separation plan.
+- Inspect the cached diff against baseline. For every inventoried path, inspect `git ls-files -s -- <path>`: require exactly one intended stage-0 mode/blob, or no entry for an intentional deletion; compare its content identity with the verified resolution.
+- Prove `git ls-files --unmerged` and `git diff --name-only --diff-filter=U` are empty. These prove stages 1–3 are gone; the per-path stage-0/intentional-deletion check proves what replaced them.
+
+Any unmerged entry or unrelated staged content means pause and report; do not widen scope or destructively clean up. Valid claim:
 
 ```text
 All inventoried conflicts are staged and the operation remains paused.
 ```
 
-This does not claim the operation continued or completed.
+This does not claim continuation or completion.
 
-## Layer 3 — Behavioral Resolution
+## Layer 3 — Behavioral resolution
 
-A syntactically valid merge can still silently lose functionality.
+Map retained and deliberately removed intent to observable contracts; a syntactically valid merge can lose functionality.
 
-Map each retained intent to an observable check:
+### Proof classes
 
-| Intent shape | Required proof |
+| Class | Rule and allowed claim |
 |---|---|
-| Independent function behavior | Focused test for each side plus their combined path |
-| Rename with incoming modification | Replacement path contains the change; old path/reference topology is correct |
-| Dependency change | Manifest and lockfile agree; relevant build/import/test succeeds |
-| Generated API/schema | Source contains both intended changes; generator succeeds; output exposes both |
-| Revert | Target behavior is absent/restored as intended while later behavior remains |
-| Rebase/cherry-pick delta | The paused commit's observable change works on the current base |
+| **Required** | Policy/intent requires this observable proof; a fresh pass is required for “behaviorally verified” or “complete.” |
+| **Equivalent** | If the original cannot run, substitute only a proof of the same contract at the same boundary; record equivalence/limits or report a gap. |
+| **Optional** | Broader out-of-scope coverage (full-suite, integration, lint, format); may remain unrun with an honest report. |
 
-Prefer repository-declared checks in this order when relevant:
+An unavailable required proof is not waived by “continue” or “finish.” Record exact command, missing credential/dependency/fixture, uncovered contract, and substitute. Keep paused unless policy permits advancement after informed explicit acceptance naming that gap and risk. Even then, never call the result behaviorally verified, behavior preserved, or complete; an accepted gap remains an accepted gap.
 
-1. focused regression or feature tests
-2. parser or syntax check
-3. typecheck or compile
-4. focused integration/build check
-5. broader test/lint/format checks required by repository policy
+### Intent-to-proof map
 
-Formatting is not semantic proof. If a formatter changes unrelated files, do not stage them as part of conflict resolution.
+| Intent | Required evidence |
+|---|---|
+| Function behavior | Focused proof for each side and combined path |
+| Rename + modification | Replacement contains change; old path/reference topology is correct |
+| Dependency change | Manifest/lockfile agree; relevant build/import/test succeeds |
+| Generated API/schema | Source contains both intents; approved generation exposes both |
+| Revert | Target behavior absent/restored while later behavior remains |
+| Rebase/cherry-pick | Paused commit's observable change works on current base |
 
-### Failed or unavailable checks
+Prefer relevant repository checks: focused regression/feature test; parser/syntax; typecheck/compile; focused integration/build; broader policy-required check. Formatting is not semantic proof; unrelated formatter churn is not resolution content.
 
-When a check fails:
+For failure, record exact command/result/failure; determine whether resolution caused it; fix only caused failures; rerun from fresh state; and stay paused while required proof fails. If unavailable, name missing environment, credential, generator, or fixture; do not relabel a narrower syntax check as the unavailable integration proof.
 
-1. record the exact command and failure
-2. determine whether the resolution caused it
-3. fix only resolution-caused failures
-4. rerun the same check
-5. keep the operation paused if required proof still fails
+### Side-effectful commands
 
-When a check cannot run, name the missing dependency, environment, credential, generator, or fixture. Replace it with a narrower valid check only if that check proves the same contract; otherwise report the verification gap.
+Generators, package managers, hooks, rebase `exec`, and network-capable checks are mutating when they can write files, change index/history/refs/stash, alter caches, or create external effects.
 
-## Layer 4 — Operation State
+**Before:** run a full gate refresh; inventory known/scoped ignored roots with `git status --short --ignored=matching -- <output-root>` and content-hash every existing file beneath them; inspect scripts, todo, hooks, tool/config, network/external effects; isolate when possible or obtain explicit authorization for the exact effects.
 
-Run after the last authorized mutation-boundary decision, including a decision to stop before staging or continuation.
+**After:** repeat the full gate refresh and ignored-output hashes. Compare HEAD/relevant refs, index stages, stash/autostash, operation metadata, and every affected path with baseline. Unexpected or irreversible external effects mean paused report—never stage, continue, roll back, or hide them automatically.
 
-Read fresh Git state and record three independent dimensions:
+## Layer 4 — Operation state
 
-**Content/index state**
+`continue`, `skip`, `abort`, and `quit` are distinct. “Finish the operation” authorizes exact verified resolution staging plus repeated `continue`, but not skip/abort/quit, unrelated staging, unreported side effects, or work after completion.
 
-- working-tree content edited while the index intentionally remains unmerged
-- exact resolution staged with no unmerged index entries
-- new unmerged entries appeared after continuation
+Before continue, inspect remaining rebase/sequencer todo, selected mainline/options, and applicable hooks. Obtain separate authorization for unreported `exec`, hook, network, or external effects; stop rather than bypass them. After any action, use fresh gate evidence and map claims to the resulting paused unit.
 
-**Operation state**
+Keep content/index, operation state, and pause reason separate. Call a state **advanced** only when the operation remains active after authorized continue and no new unmerged entry exists; use **continued to a new conflict** when new unmerged entries appear.
 
-- original operation active and not advanced
-- original operation active and advanced to a later sequencer step
-- original operation inactive because it completed
-- original operation inactive because the user explicitly aborted it
+Approve `skip` explicitly before action after proving redundancy. Before abort/quit, record autostash A and all pre-existing stash OIDs B. After abort classify A as applied cleanly, apply-conflicted, retained, moved, or unexplained; compare baseline tree/index/untracked content and prove every B remains reachable unchanged. After quit, prove control metadata ended, tree/index stayed unchanged, A was retained or moved as expected, and every B remains reachable. Any unexplained A/B or baseline difference blocks restored/preserved claims.
 
-**Pause reason**
+Use **completed** only when the original operation/control metadata is inactive, expected HEAD/history exists, no unmerged entry remains, required post-continuation proofs pass, all skipped units have approval/redundancy evidence, autostash outcome is verified, and unrelated baseline content is preserved.
 
-- user-authorized scope ended
-- verification failed or remains unavailable
-- intent remains unresolved
-- continuation stopped at a new conflict
-- none
-
-Use “completed” only when the original operation is no longer active. Use “advanced” only when that operation remains active and no new unmerged entry exists. Record “aborted” only after the explicit abort action was observed. Keeping these dimensions separate prevents a staged-but-failing resolution or a new conflict from being mislabeled as ordinary progress.
-
-For a completed operation, verify:
-
-- Git reports no active operation of the original type
-- no unmerged index entry remains
-- expected commits or merge result exist without an extra manual commit
-- focused behavior checks still pass after any later sequencer steps
-- unrelated pre-existing work is preserved
-
-A clean worktree is not required if it was not clean beforehand.
-
-## Claim-to-Evidence Matrix
+## Claim-to-evidence matrix
 
 | Claim | Minimum fresh evidence |
 |---|---|
-| “Markers removed” | marker search and direct inspection of all text conflicts |
-| “Working-tree resolution verified” | complete inventory, semantic rationale, focused file/artifact checks |
-| “Conflicts staged” | staged diff inspected and unmerged index empty |
-| “Behavior preserved” | checks mapped to both sides' observable intents |
-| “Operation advanced” | continuation result plus fresh Git state |
-| “Operation complete” | no active operation/unmerged entries plus post-continuation behavior checks |
-| “Operation aborted” | explicit user choice, stated discard impact, fresh Git state |
+| Markers removed | Marker search, direct review, complete unmerged/non-text inventory |
+| Working-tree resolution verified | Baseline path/hunk inventory, semantic rationale, required focused checks |
+| Conflicts staged | Explicit authorization, inspected staged diff, empty unmerged index |
+| Behavior preserved | Required checks mapped to both intents, or justified equivalent |
+| Operation advanced | Authorized continue, no new unmerged entry, refreshed history/control state |
+| Operation complete | Inactive control state, expected history, empty unmerged index, required proofs, verified skips/autostash |
+| Operation skipped | Pre-action approval, discarded-unit evidence, fresh state |
+| Operation aborted | Explicit abort/risk, baseline comparison, classified A outcome, every B OID preserved |
+| Operation quit | Explicit preservation request, ended metadata, unchanged tree/index, classified A and preserved B OIDs |
 
-Never use evidence from before the last generator run, edit, stage, continuation, or abort to support a later-state claim.
+Never use evidence from before the last edit, side-effectful command, stage, continue, skip, abort, or quit for a later claim.
 
-## Final Evidence Record
+## Final evidence record
 
 ```md
 ## Verification
 
-- Original conflict inventory:
-- Marker/non-text coverage:
-- Syntax/type/build checks:
-- Intent A behavior check:
-- Intent B behavior check:
-- Generated/lockfile consistency:
-- Staged diff and unmerged-index state:
-- Current Git operation state:
-- Checks unavailable or failing:
-- Unrelated work preservation:
+- Operation, paused unit, todo/options/mainline:
+- Baseline HEAD/refs/index/stash/autostash and affected content identities:
+- Marker/unmerged checks and false-positive review:
+- Intent records, tradeoffs, required/equivalent/optional proof:
+- Side-effect/`exec`/hook authorization and pre/post inventory:
+- Cached diff, exact stage-0 or intentional-deletion proof:
+- Last transition, fresh control/history/content state:
+- Failures/gaps, informed acceptance, pause reason:
 ```
 
-If any required row lacks evidence, scope the result accordingly instead of declaring completion.
+If any required row lacks evidence, pause and scope the result. A generic continue request is not a waiver. An accepted gap must never be called behaviorally verified or complete.

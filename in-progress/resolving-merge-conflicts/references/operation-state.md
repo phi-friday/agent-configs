@@ -1,143 +1,137 @@
 # Operation State and Mutation Boundaries
 
-Identify the exact Git operation before interpreting sides or mutating its state.
+Identify the exact Git operation before interpreting sides or mutating state.
+Keep intent reconciliation separate from index, history, and filesystem
+mutation.
 
-## Core Rule
+## Core rule
 
 ```text
-operation identity + paused unit + complete conflict index + explicit mutation scope
+operation identity + paused unit + complete conflict index
+  + content baseline + explicit mutation scope
 ```
 
-A conflict resolution is not one atomic action. Editing files, staging paths, continuing a sequencer, recording a commit, aborting, resetting, cleaning, and pushing have different effects and require separate authorization.
+Editing, staging, continuing, committing, skipping, aborting, quitting,
+resetting, cleaning, and pushing are distinct actions with distinct
+authorization.
 
-## Detect the Active Operation
+## Detect the active operation
 
-Start with Git's own status and path resolution rather than assuming `.git` is a directory. A linked worktree may store operation metadata elsewhere.
-
-Useful read-only evidence includes:
+Start with Git's state, then inspect metadata without mutating anything:
 
 ```sh
-git status --short
 git status
+git status --short
 git diff --name-only --diff-filter=U
 git ls-files --unmerged
 git rev-parse --show-toplevel
-git rev-parse --git-path MERGE_HEAD
-git rev-parse --git-path REBASE_HEAD
-git rev-parse --git-path CHERRY_PICK_HEAD
-git rev-parse --git-path REVERT_HEAD
+for n in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD MERGE_AUTOSTASH; do
+  p=$(git rev-parse --git-path "$n") || exit
+  if test -f "$p"; then printf '%s (%s):\n' "$n" "$p"; cat "$p"
+  elif test -e "$p"; then printf '%s exists at %s\n' "$n" "$p"
+  else printf '%s absent at %s\n' "$n" "$p"; fi
+done
+for n in rebase-merge rebase-apply sequencer; do
+  d=$(git rev-parse --git-path "$n") || exit
+  test -d "$d" || continue
+  for f in head-name onto msgnum end git-rebase-todo done autostash \
+           todo head opts abort-safety; do
+    test -f "$d/$f" && { printf '%s/%s:\n' "$d" "$f"; cat "$d/$f"; }
+  done
+done
 ```
 
-Use operation-specific evidence:
+The printed `--git-path` is only a location, not evidence of existence or an
+active operation; linked worktrees may store metadata outside common `.git`.
+For each present pseudo-ref, verify the object:
+
+```sh
+git rev-parse --verify --quiet MERGE_HEAD^{commit}
+git rev-parse --verify --quiet REBASE_HEAD^{commit}
+git rev-parse --verify --quiet CHERRY_PICK_HEAD^{commit}
+git rev-parse --verify --quiet REVERT_HEAD^{commit}
+git rev-parse --verify --quiet MERGE_AUTOSTASH^{commit}
+```
+
+Declare an operation active only when `git status`, its control directory, and any verified pseudo-ref agree. A printed/fake metadata path is not active state. Rebase may use `rebase-merge`/`rebase-apply`; multi-commit cherry-pick/revert may use `sequencer` even when the current pseudo-ref is absent. Stop when status is inactive, metadata conflicts, the request names another operation, or the paused unit/goal/options cannot be identified.
 
 | Operation | Primary state evidence | Paused-unit evidence |
 |---|---|---|
-| Merge | `git status`, `MERGE_HEAD` | merge heads, parent commits, merge message/goal |
-| Rebase | `git status`, rebase metadata, often `REBASE_HEAD` | `git rebase --show-current-patch`, todo/done state, paused commit |
-| Cherry-pick | `git status`, `CHERRY_PICK_HEAD` | selected commit and its parent/delta |
-| Revert | `git status`, `REVERT_HEAD` | target commit, inverse patch, later/current changes |
+| Merge | `git status`, verified `MERGE_HEAD` | merge heads, parents, message/goal |
+| Rebase | `git status`, rebase control directory | current patch, todo/done, paused commit, empty policy, autostash |
+| Cherry-pick | `git status`, `CHERRY_PICK_HEAD` and/or `sequencer` | selected commit, todo/head/opts, mainline parent, remaining sequence |
+| Revert | `git status`, `REVERT_HEAD` and/or `sequencer` | target commit, todo/head/opts, mainline parent, inverse, remaining sequence |
 
-Do not infer an operation from conflict markers alone. A file can contain old markers with no active operation, and modify/delete or binary conflicts can have no markers.
+## Inventory index stages and map sides
 
-Stop before editing when:
-
-- Git reports no active merge, rebase, cherry-pick, or revert
-- metadata for multiple operations appears inconsistent
-- the operation differs from the user's description and the difference changes the intended resolution
-- the paused commit or merge goal cannot be identified well enough to interpret the conflict
-
-## Inventory Index Stages
-
-For an unmerged path, Git's index may expose:
-
-```text
-stage 1: merge base
-stage 2: one operation side
-stage 3: the competing operation side
-```
-
-Inspect available stages without assuming all three exist:
+For an unmerged path, inspect every available stage:
 
 ```sh
-git show :1:path/to/file
-git show :2:path/to/file
-git show :3:path/to/file
+git show :1:path/to/file   # merge base
+git show :2:path/to/file   # one operation side
+git show :3:path/to/file   # competing side
 ```
 
-Delete, add/add, binary, mode, and rename-related conflicts can omit a stage or represent intent across more than one path. `git ls-files --unmerged` is the authoritative inventory of index stages; the working-tree marker layout is only one rendering.
+Stages may be absent for delete, add/add, binary, mode, or rename conflicts; `git ls-files --unmerged` is authoritative. Name the source behind each side, not merely “ours” or “theirs.” For rebase, map the paused patch rather than assuming “ours” is the feature branch. For a merge-commit cherry-pick/revert, read `sequencer/opts` or equivalent command evidence and identify the selected `-m` mainline parent; stop if it is unavailable. Apply the selected delta or inverse while preserving unrelated current behavior.
 
-## Map Sides Through the Operation
+## Capture the content baseline
 
-Do not write a rationale that merely says “ours” or “theirs.” Name the actual source.
+Before editing, run the baseline set in `verification-checklist.md`; at minimum capture status, staged and unstaged binary diffs, and untracked paths. For every touched path, distinguish unrelated baseline hunks from resolution hunks and preserve staged/unstaged content independently. Cleanliness is not proof; preservation is.
 
-### Merge
+## Authorization matrix
 
-Stage 2 commonly corresponds to current `HEAD`; stage 3 corresponds to a merged head. Verify this against commit content and the merge heads, especially for octopus or unusual merges.
-
-### Rebase
-
-The practical labels are counterintuitive: one side commonly reflects the new base plus already-replayed commits, while the other reflects the commit currently being replayed. Use the current patch and commit identity to map each stage. Never treat “ours” as automatically meaning the user's feature branch.
-
-Resolve only the paused commit's intent. Later commits in the rebase may change the same code but are not part of this stop yet.
-
-### Cherry-pick
-
-Interpret the conflict as the selected commit's delta applied to current `HEAD`. Preserve unrelated current-branch behavior while retaining the picked delta that remains applicable.
-
-### Revert
-
-Interpret the conflict as an inverse change applied to current `HEAD`. Verify that the result intentionally undoes the target behavior while retaining changes made after the target commit.
-
-## Capture Pre-Existing Work
-
-Before editing, record:
-
-- already-staged paths unrelated to the conflict
-- unstaged modifications unrelated to the conflict
-- untracked files
-- files modified by generators or package-manager commands during resolution
-
-Do not use a clean final worktree as the success criterion when unrelated work existed before the operation. The invariant is preservation, not emptiness.
-
-## Authorization Matrix
-
-| Action | Implied by “resolve the conflicts”? | Required boundary |
+| Action | “Resolve conflicts” implies it? | Required boundary |
 |---|---:|---|
 | Read status, history, operation metadata | Yes | Read-only investigation |
-| Edit conflicted files and their required source artifacts | Yes | Conflict-resolution scope |
-| Run focused, non-destructive verification | Yes | Resolution proof |
-| Stage exact resolution paths | No | Explicit stage/mark-resolved/finish scope |
-| Continue merge/rebase/cherry-pick/revert | No | Explicit continue/finish-current-operation scope |
-| Record a standalone commit | No | Explicit commit request |
-| Abort the operation | No | Explicit abort choice after impact is stated |
-| Reset or clean | No | Explicit destructive request and path/scope review |
-| Push or force-push | No | Explicit publication request |
+| Edit conflicted files and required source artifacts | Yes | Resolution scope |
+| Focused, non-destructive verification | Yes | Resolution proof |
+| Stage exact conflict-resolution content | No | Explicit stage/mark-resolved scope, or explicit finish-current-operation scope |
+| Continue | No | Explicit operation-specific continue or finish-current-operation scope |
+| Skip | No | Explicit skip, paused-unit evidence, impact report |
+| Abort | No | Explicit abort after impact statement |
+| Quit | No | Explicit request to preserve tree/index |
+| Generator/package-manager/hook/network/`exec` command | No | Explicit side-effect authorization, baseline, isolation, post-run inventory |
+| Continue despite required proof gap | No | Exact gap and informed risk acceptance, if policy permits |
+| Commit, reset, clean, push | No | Separate explicit request and scope review |
 
-If the user explicitly asks to finish the entire current operation, that scope can cover later stops in the same operation. Each stop still requires a new inventory, intent reconstruction, verification, and pre-continuation state report. It does not authorize work after the observed operation completes.
+“Finish this operation” authorizes exact verified resolution staging plus repeated `--continue` for the observed operation—not skip, abort, quit, unrelated staging, unreported side-effectful commands, or a proof waiver. Before every continue, inspect remaining rebase/sequencer todo and applicable hooks. Disclose non-pick todo actions; require separate authorization for shell `exec`, hook, network, or other external effects not already named. Stop rather than bypass them.
 
-## Continuation Effects
+## Operation transitions
 
-| Operation | Normal continuation | Important effect |
-|---|---|---|
-| Merge | `git merge --continue` | Can create the merge commit |
-| Rebase | `git rebase --continue` | Records/replays the paused commit and advances the sequencer |
-| Cherry-pick | `git cherry-pick --continue` | Records the picked commit and advances a sequence if present |
-| Revert | `git revert --continue` | Records the revert and advances a sequence if present |
+Use only the command matching the observed operation. Each is a separate
+mutation; re-check state afterward.
 
-Use the command that matches observed state. Do not run a manual `git commit` merely because continuation records a commit. Do not suppress commit hooks or editors unless the user or repository workflow authorizes that behavior.
+| Operation | `continue` | `skip` | `abort` | `quit` |
+|---|---|---|---|---|
+| Merge | `git merge --continue`: may record the merge commit and complete. | **Unsupported:** `git merge --skip` does not exist; stop. | `git merge --abort`: attempts pre-merge restoration. | `git merge --quit`: forgets metadata, keeps index/worktree. |
+| Rebase | `git rebase --continue`: may record/replay and advance according to todo/empty policy. | `git rebase --skip`: discards paused commit and advances; explicit evidence/approval required. | `git rebase --abort`: resets toward pre-operation state. | `git rebase --quit`: ends metadata, preserves current `HEAD`, index, worktree. |
+| Cherry-pick | `git cherry-pick --continue`: may record and advance the remaining sequence. | `git cherry-pick --skip`: discards current unit and advances. | `git cherry-pick --abort`: cancels sequence and attempts restoration. | `git cherry-pick --quit`: forgets sequence, preserves index/worktree. |
+| Revert | `git revert --continue`: may record and advance the remaining sequence. | `git revert --skip`: discards current unit and advances. | `git revert --abort`: cancels sequence and attempts restoration. | `git revert --quit`: forgets sequence, preserves index/worktree. |
 
-## Pre-Mutation Report
+Before abort, quit, or completion, record autostash OID **A** (`MERGE_AUTOSTASH` or rebase `autostash`) and every pre-existing `refs/stash`/reflog OID **B**. Afterward classify A explicitly: applied cleanly, applied with conflicts, retained in operation metadata, moved to `refs/stash`, or missing/unexplained. Prove every B remains reachable with the same OID, explaining only an expected A insertion. Abort can fail to reconstruct dirty work; quit preserves current tree/index but can move A; completion can apply A and conflict. Do not claim restored/preserved/completed until baseline plus every A/B outcome is accounted. Never replace continuation with manual commit or suppress hooks/editors without authorization.
 
-Before staging, continuing, committing, or aborting, report:
+## Same-path gate and transition report
+
+If unrelated work shares a conflicted path, do not path-stage it. `git add -p`
+is not a conflict-resolution mechanism: it may report `needs merge` and leave
+stages 1–3 unchanged. Proceed only with an explicit, reviewed separation plan
+that constructs the exact stage-0 resolution while keeping unrelated content
+outside the index, then proves both staged and working-tree diffs. Otherwise
+stop before staging or continuation and report the boundary.
+
+Before staging, continuing, skipping, aborting, quitting, or a side-effectful
+command, report:
 
 ```md
-- Active operation:
-- Paused unit:
-- Current conflict/index state:
-- Verification completed:
-- Exact next mutation:
-- Expected history/worktree effect:
+- Active operation, verified control metadata, remaining todo/options:
+- Paused unit and selected mainline parent:
+- Baseline HEAD/relevant refs/index/staged/unstaged/untracked content:
+- Autostash OID and pre-existing `refs/stash` identity:
+- Same-path unrelated hunks and current conflict state:
+- Verification completed and required gaps:
+- Pending `exec`/hook/network effects and authorization:
+- Exact next mutation and expected history/index/worktree/stash effect:
 - Actions still out of scope:
 ```
 
-If authorization is already explicit, this report is notice and evidence, not a redundant approval request. If authorization is absent, stop before the mutation.
+After every transition or side-effectful command, run the full gate refresh from `verification-checklist.md`: compare HEAD/relevant refs, index stages, tracked/untracked/ignored content identities, operation/sequencer metadata, and autostash/stash state. Record completed, continued-to-new-conflict, cleanly advanced, paused, skipped, aborted, or quit without reusing pre-transition evidence.
